@@ -1,0 +1,36 @@
+{
+	// Buscador de Empresas - Blendibox — Cloudflare Worker
+	"name": "buscador-empresas-blendibox",
+	"main": "src/index.js",
+	"compatibility_date": "2025-07-01",
+	// Banco D1 (cache de CNPJs). Rode:
+	//   npx wrangler d1 create buscador-empresas-blendibox
+	// e cole o "database_id" retornado abaixo.
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "buscador-empresas-blendibox",
+			"database_id": "20684aa8-251c-4c9a-a602-6c3cf9164889"
+		},
+		{
+			"binding": "buscador_empresas_blendibox",
+			"database_name": "buscador-empresas-blendibox",
+			"database_id": "20684aa8-251c-4c9a-a602-6c3cf9164889",
+			"remote": true
+		}
+	],
+	// Configuracoes (dá pra mudar sem editar codigo)
+	"vars": {
+		"CACHE_TTL_DAYS": "30",
+		"MASK_SOCIOS": "true"
+	},
+	// Cron: todo dia as 03:00 UTC, atualiza um lote de registros vencidos.
+	"triggers": {
+		"crons": [
+			"0 3 * * *"
+		]
+	},
+	"observability": {
+		"enabled": true
+	}
+}
