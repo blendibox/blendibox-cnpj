@@ -4,10 +4,12 @@
  */
 
 // ==========================================================================
-// CONFIG: URL do Worker publicado (produção).
-// Para testar localmente com "wrangler dev", troque por "http://localhost:8787".
+// Configuração vem de config.js (window.APP_CONFIG). Fallbacks abaixo.
+// Para testar local com "wrangler dev", ajuste API_BASE no config.js.
 // ==========================================================================
-const API_BASE = "https://buscador-empresas-blendibox.blendibox.workers.dev";
+const CFG = window.APP_CONFIG || {};
+const API_BASE = CFG.API_BASE || "https://buscador-empresas-blendibox.blendibox.workers.dev";
+const SITE_URL = (CFG.SITE_URL || "https://buscadeempresa.blendibox.com.br").replace(/\/$/, "");
 
 const form = document.getElementById("form-busca");
 const input = document.getElementById("entrada-cnpj");
@@ -533,14 +535,14 @@ function atualizarSeoEmpresa(d) {
     "description",
     `${razao} (CNPJ ${cnpjFmt})${situacao ? " · " + situacao : ""}${local ? " · " + local : ""}${d.cnae_fiscal_descricao ? " · " + d.cnae_fiscal_descricao : ""}. Consulta grátis de CNPJ na Blendibox.`
   );
-  setCanonical(`https://buscadeempresas.blendibox.com.br/?cnpj=${onlyDigits(d.cnpj)}`);
+  setCanonical(`${SITE_URL}/?cnpj=${onlyDigits(d.cnpj)}`);
   injetarJsonLdEmpresa(d);
 }
 
 function restaurarSeoPadrao() {
   document.title = SEO_PADRAO.titulo;
   setMeta("description", SEO_PADRAO.descricao);
-  setCanonical("https://buscadeempresas.blendibox.com.br/");
+  setCanonical(`${SITE_URL}/`);
   removerJsonLd();
 }
 
@@ -554,7 +556,7 @@ function injetarJsonLdEmpresa(d) {
     alternateName: d.nome_fantasia || undefined,
     taxID: d.cnpj || undefined,
     foundingDate: d.data_inicio_atividade || undefined,
-    url: `https://buscadeempresas.blendibox.com.br/?cnpj=${onlyDigits(d.cnpj)}`,
+    url: `${SITE_URL}/?cnpj=${onlyDigits(d.cnpj)}`,
     address: d.municipio
       ? {
           "@type": "PostalAddress",
