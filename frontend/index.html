@@ -6,6 +6,7 @@
   <title>Buscador de Empresas - Blendibox</title>
   <meta name="description" content="Consulte dados de empresas por CNPJ — dados públicos da Receita Federal." />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="ads.css" />
 </head>
 <body>
   <header class="topo">
@@ -35,7 +36,13 @@
       <p id="msg-erro" class="msg-erro" hidden></p>
     </section>
 
+    <!-- Área de produtos (topo) -->
+    <section id="ads-topo" class="ads-area"></section>
+
     <section id="resultado" class="resultado" hidden></section>
+
+    <!-- Área de produtos (rodapé do conteúdo) -->
+    <section id="ads-rodape" class="ads-area"></section>
   </main>
 
   <footer class="rodape">
@@ -49,5 +56,6 @@
   </footer>
 
   <script src="app.js"></script>
+  <script src="ads.js"></script>
 </body>
 </html>
