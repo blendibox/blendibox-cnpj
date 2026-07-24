@@ -1,0 +1,57 @@
+name: Gerar páginas por empresa (SEO)
+
+# Gera 1 página estática por empresa já pesquisada e publica no Pages.
+# Requer o secret ADMIN_TOKEN (repo Settings > Secrets and variables > Actions).
+on:
+  schedule:
+    - cron: "0 6 * * *" # todo dia às 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  gerar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Gerar páginas + sitemap
+        env:
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+        run: node scripts/gerar-paginas.mjs
+
+      - name: Commit das páginas geradas
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A frontend/empresa frontend/sitemap.xml
+          git commit -m "chore: regenerar páginas por empresa [skip ci]" || echo "sem mudanças"
+          git push || echo "nada a enviar"
+
+      - name: Configurar Pages
+        uses: actions/configure-pages@v5
+
+      - name: Empacotar o site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend
+
+      - name: Publicar no Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

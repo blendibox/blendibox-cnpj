@@ -11,12 +11,15 @@ CREATE TABLE IF NOT EXISTS cnpj_cache (
   nome_fantasia TEXT,
   municipio     TEXT,
   uf            TEXT,
+  hits          INTEGER NOT NULL DEFAULT 0,  -- nº de buscas (poda por demanda)
+  last_hit      TEXT,                        -- última busca (ISO 8601)
   updated_at    TEXT NOT NULL       -- ISO 8601 (para calcular TTL)
 );
 
 CREATE INDEX IF NOT EXISTS idx_cache_updated ON cnpj_cache (updated_at);
 CREATE INDEX IF NOT EXISTS idx_cache_cidade  ON cnpj_cache (uf, municipio);
 CREATE INDEX IF NOT EXISTS idx_cache_razao   ON cnpj_cache (razao_social);
+CREATE INDEX IF NOT EXISTS idx_cache_hits    ON cnpj_cache (hits, last_hit);
 
 -- Contador de demanda por cidade.
 -- Base para no futuro "promover" uma cidade inteira (importacao em lote).

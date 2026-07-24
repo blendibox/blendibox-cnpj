@@ -75,6 +75,11 @@ export default {
       return handleAdmin(url, request, env);
     }
 
+    // Export dos CNPJs em cache (protegido) — gera as paginas estaticas
+    if (url.pathname === "/export" && request.method === "GET") {
+      return handleExport(url, env);
+    }
+
     // Busca por nome na base ja cacheada: /buscar?nome=...
     if (url.pathname === "/buscar" && request.method === "GET") {
       return handleBuscaNome(url, env);
@@ -130,6 +135,7 @@ async function handleConsulta(cnpjRaw, env, ctx) {
   const cached = await getFromCache(env, cnpj);
   if (cached && !isStale(cached.updated_at, ttlDays)) {
     const data = JSON.parse(cached.payload);
+    ctx.waitUntil(registrarHit(env, cnpj));
     return corsResponse({ fonte: "cache", data: aplicarMascaras(data, env) }, 200);
   }
 
@@ -137,8 +143,8 @@ async function handleConsulta(cnpjRaw, env, ctx) {
   const up = await consultarUpstream(cnpj);
 
   if (up.status === 200) {
-    // 3. Grava no cache em background (nao atrasa a resposta)
-    ctx.waitUntil(saveToCache(env, cnpj, up.data));
+    // 3. Grava no cache em background e conta o hit (nao atrasa a resposta)
+    ctx.waitUntil(saveToCache(env, cnpj, up.data).then(() => registrarHit(env, cnpj)));
     // 4. Devolve ao usuario (mascarado)
     return corsResponse({ fonte: up.fonte, data: aplicarMascaras(up.data, env) }, 200);
   }
@@ -150,6 +156,7 @@ async function handleConsulta(cnpjRaw, env, ctx) {
   // Todas as fontes falharam: se tivermos cache (mesmo vencido), servimos.
   if (cached) {
     const data = JSON.parse(cached.payload);
+    ctx.waitUntil(registrarHit(env, cnpj));
     return corsResponse(
       { fonte: "cache-vencido", data: aplicarMascaras(data, env) },
       200
@@ -420,6 +427,55 @@ async function saveToCache(env, cnpj, data) {
       .bind(municipio, uf, now)
       .run();
   }
+}
+
+/** Incrementa o contador de buscas do CNPJ (para poda por demanda). */
+async function registrarHit(env, cnpj) {
+  await env.DB.prepare(
+    "UPDATE cnpj_cache SET hits = hits + 1, last_hit = ? WHERE cnpj = ?"
+  )
+    .bind(new Date().toISOString(), cnpj)
+    .run();
+}
+
+/**
+ * Export paginado dos CNPJs em cache (protegido por ADMIN_TOKEN).
+ * Usado pelo gerador de paginas estaticas.
+ *   GET /export?token=...&limit=500&offset=0
+ */
+async function handleExport(url, env) {
+  if (!env.ADMIN_TOKEN) {
+    return corsResponse({ erro: "Export desativado (configure ADMIN_TOKEN)." }, 501);
+  }
+  if ((url.searchParams.get("token") || "") !== env.ADMIN_TOKEN) {
+    return corsResponse({ erro: "Nao autorizado." }, 401);
+  }
+
+  const limit = Math.min(1000, Math.max(1, parseInt(url.searchParams.get("limit") || "500", 10)));
+  const offset = Math.max(0, parseInt(url.searchParams.get("offset") || "0", 10));
+
+  const totalRow = await env.DB.prepare("SELECT COUNT(*) AS n FROM cnpj_cache").first();
+  const { results } = await env.DB.prepare(
+    `SELECT cnpj, payload, hits, last_hit, updated_at
+       FROM cnpj_cache
+      ORDER BY updated_at ASC
+      LIMIT ? OFFSET ?`
+  )
+    .bind(limit, offset)
+    .all();
+
+  const empresas = (results ?? []).map((r) => ({
+    cnpj: r.cnpj,
+    hits: r.hits,
+    last_hit: r.last_hit,
+    updated_at: r.updated_at,
+    data: JSON.parse(r.payload),
+  }));
+
+  return corsResponse(
+    { total: totalRow?.n ?? 0, limit, offset, empresas },
+    200
+  );
 }
 
 async function refreshVencidos(env) {

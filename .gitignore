@@ -1,5 +1,7 @@
 node_modules/
 .wrangler/
 .dev.vars
+.dev.vars*
+*.token-temp
 *.log
 .DS_Store

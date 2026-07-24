@@ -35,9 +35,11 @@ window.Ads = {
   inline: () => montarEmContainer("ads-inline", "Ofertas Blendibox", 8),
 };
 
-// Na carga da página, preenche só o rodapé (não ocupa a primeira dobra).
+// Na carga da página: preenche o rodapé sempre, e o inline SE já existir
+// (caso das páginas estáticas de empresa, que não têm app.js).
 document.addEventListener("DOMContentLoaded", () => {
   montarEmContainer("ads-rodape", "Você também pode gostar", 8);
+  montarEmContainer("ads-inline", "Ofertas Blendibox", 8);
 });
 
 async function carregarProdutos() {

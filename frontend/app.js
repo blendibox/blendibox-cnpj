@@ -394,6 +394,24 @@ function onlyDigits(s) {
   return (s || "").replace(/\D/g, "");
 }
 
+// Mesmo slug do gerador de páginas estáticas (URL canônica da empresa)
+function slug(s) {
+  return (
+    (s || "empresa")
+      .toString()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "")
+      .slice(0, 60) || "empresa"
+  );
+}
+
+function rotaEmpresa(d) {
+  return `${SITE_URL}/empresa/${slug(d.razao_social || d.nome_fantasia)}-${onlyDigits(d.cnpj)}/`;
+}
+
 function formatarCnpj(d) {
   d = onlyDigits(d).slice(0, 14);
   if (d.length <= 2) return d;
@@ -549,7 +567,7 @@ function atualizarSeoEmpresa(d) {
     "description",
     `${razao} (CNPJ ${cnpjFmt})${situacao ? " · " + situacao : ""}${local ? " · " + local : ""}${d.cnae_fiscal_descricao ? " · " + d.cnae_fiscal_descricao : ""}. Consulta grátis de CNPJ na Blendibox.`
   );
-  setCanonical(`${SITE_URL}/?cnpj=${onlyDigits(d.cnpj)}`);
+  setCanonical(rotaEmpresa(d)); // aponta para a página estática (canônica)
   injetarJsonLdEmpresa(d);
 }
 
@@ -570,7 +588,7 @@ function injetarJsonLdEmpresa(d) {
     alternateName: d.nome_fantasia || undefined,
     taxID: d.cnpj || undefined,
     foundingDate: d.data_inicio_atividade || undefined,
-    url: `${SITE_URL}/?cnpj=${onlyDigits(d.cnpj)}`,
+    url: rotaEmpresa(d),
     address: d.municipio
       ? {
           "@type": "PostalAddress",
