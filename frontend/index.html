@@ -3,8 +3,69 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Buscador de Empresas - Blendibox</title>
-  <meta name="description" content="Consulte dados de empresas por CNPJ — dados públicos da Receita Federal." />
+
+  <!-- ====================================================================
+       SEO — se o domínio final for diferente, troque TODAS as ocorrências
+       de https://buscadeempresas.blendibox.com.br pelo seu domínio (find-replace).
+       ==================================================================== -->
+  <title>Consulta CNPJ Grátis — Busca de Empresas | Blendibox</title>
+  <meta name="description" content="Consulte CNPJ grátis: razão social, nome fantasia, situação cadastral, endereço, CNAE e quadro societário. Dados públicos da Receita Federal em segundos." />
+  <link rel="canonical" href="https://buscadeempresas.blendibox.com.br/" />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="theme-color" content="#1f6feb" />
+  <meta name="author" content="Blendibox" />
+
+  <!-- Open Graph (WhatsApp, Facebook, LinkedIn) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Busca de Empresas Blendibox" />
+  <meta property="og:title" content="Consulta CNPJ Grátis — Busca de Empresas Blendibox" />
+  <meta property="og:description" content="Consulte CNPJ grátis: razão social, situação cadastral, endereço, CNAE e sócios. Dados públicos da Receita Federal." />
+  <meta property="og:url" content="https://buscadeempresas.blendibox.com.br/" />
+  <meta property="og:image" content="https://buscadeempresas.blendibox.com.br/og-image.svg" />
+  <meta property="og:locale" content="pt_BR" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Consulta CNPJ Grátis — Busca de Empresas Blendibox" />
+  <meta name="twitter:description" content="Consulte CNPJ grátis: razão social, situação cadastral, endereço, CNAE e sócios." />
+  <meta name="twitter:image" content="https://buscadeempresas.blendibox.com.br/og-image.svg" />
+
+  <!-- Ícones / PWA -->
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="favicon.svg" />
+  <link rel="manifest" href="manifest.webmanifest" />
+
+  <!-- Dados estruturados: site + caixa de busca (SearchAction) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Busca de Empresas Blendibox",
+    "alternateName": "Consulta CNPJ Blendibox",
+    "url": "https://buscadeempresas.blendibox.com.br/",
+    "inLanguage": "pt-BR",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://buscadeempresas.blendibox.com.br/?cnpj={cnpj}"
+      },
+      "query-input": "required name=cnpj"
+    }
+  }
+  </script>
+
+  <!-- Dados estruturados: organização -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Blendibox",
+    "url": "https://buscadeempresas.blendibox.com.br/",
+    "logo": "https://buscadeempresas.blendibox.com.br/favicon.svg"
+  }
+  </script>
+
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="ads.css" />
 </head>
@@ -13,15 +74,15 @@
     <div class="wrap topo-conteudo">
       <a href="./" class="marca">
         <span class="marca-icone">🔎</span>
-        <span class="marca-texto">Buscador de Empresas <strong>Blendibox</strong></span>
+        <span class="marca-texto">Busca de Empresas <strong>Blendibox</strong></span>
       </a>
     </div>
   </header>
 
   <main class="wrap">
     <section class="busca-hero">
-      <h1>Consulte uma empresa pelo CNPJ</h1>
-      <p class="sub">Dados públicos da Receita Federal (Dados Abertos CNPJ).</p>
+      <h1>Consulta de CNPJ grátis</h1>
+      <p class="sub">Razão social, situação cadastral, endereço, CNAE e sócios — dados públicos da Receita Federal.</p>
 
       <form id="form-busca" class="busca-form" autocomplete="off">
         <input
@@ -37,12 +98,12 @@
     </section>
 
     <!-- Área de produtos (topo) -->
-    <section id="ads-topo" class="ads-area"></section>
+    <section id="ads-topo" class="ads-area" aria-label="Ofertas patrocinadas"></section>
 
     <section id="resultado" class="resultado" hidden></section>
 
     <!-- Área de produtos (rodapé do conteúdo) -->
-    <section id="ads-rodape" class="ads-area"></section>
+    <section id="ads-rodape" class="ads-area" aria-label="Produtos recomendados"></section>
   </main>
 
   <footer class="rodape">
@@ -51,7 +112,7 @@
         Dados públicos da Receita Federal (Dados Abertos CNPJ).
         Informações de sócios são exibidas de forma parcial (LGPD).
       </p>
-      <p class="rodape-marca">Buscador de Empresas — Blendibox</p>
+      <p class="rodape-marca">Busca de Empresas — Blendibox</p>
     </div>
   </footer>
 

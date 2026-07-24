@@ -212,6 +212,8 @@ async function consultar(cnpj) {
     }
 
     renderizar(json.data, json.fonte);
+    atualizarUrlEmpresa(cnpj);
+    atualizarSeoEmpresa(json.data);
   } catch (err) {
     boxResultado.hidden = true;
     mostrarErro("Erro de conexão com o servidor. Verifique se a API está no ar.");
@@ -413,3 +415,124 @@ function limparErro() {
   boxErro.hidden = true;
   boxErro.textContent = "";
 }
+
+/* ------------------------- SEO dinâmico + rota por URL ------------------------- */
+
+const SEO_PADRAO = {
+  titulo: "Consulta CNPJ Grátis — Busca de Empresas | Blendibox",
+  descricao:
+    "Consulte CNPJ grátis: razão social, nome fantasia, situação cadastral, endereço, CNAE e quadro societário. Dados públicos da Receita Federal em segundos.",
+};
+
+// Coloca ?cnpj=... na URL (compartilhável e indexável) sem recarregar
+function atualizarUrlEmpresa(cnpj) {
+  const url = `${location.pathname}?cnpj=${onlyDigits(cnpj)}`;
+  if (location.search !== `?cnpj=${onlyDigits(cnpj)}`) {
+    history.pushState({ cnpj }, "", url);
+  }
+}
+
+// Atualiza título, descrição, canonical e JSON-LD conforme a empresa exibida
+function atualizarSeoEmpresa(d) {
+  const cnpjFmt = formatarCnpj(String(d.cnpj || ""));
+  const razao = d.razao_social || "Empresa";
+  const local = [d.municipio, d.uf].filter(Boolean).join("/");
+  const situacao = d.descricao_situacao_cadastral || "";
+
+  document.title = `${razao} — CNPJ ${cnpjFmt} | Busca de Empresas Blendibox`;
+  setMeta(
+    "description",
+    `${razao} (CNPJ ${cnpjFmt})${situacao ? " · " + situacao : ""}${local ? " · " + local : ""}${d.cnae_fiscal_descricao ? " · " + d.cnae_fiscal_descricao : ""}. Consulta grátis de CNPJ na Blendibox.`
+  );
+  setCanonical(`https://buscadeempresas.blendibox.com.br/?cnpj=${onlyDigits(d.cnpj)}`);
+  injetarJsonLdEmpresa(d);
+}
+
+function restaurarSeoPadrao() {
+  document.title = SEO_PADRAO.titulo;
+  setMeta("description", SEO_PADRAO.descricao);
+  setCanonical("https://buscadeempresas.blendibox.com.br/");
+  removerJsonLd();
+}
+
+function injetarJsonLdEmpresa(d) {
+  removerJsonLd();
+  const dados = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: d.razao_social || undefined,
+    legalName: d.razao_social || undefined,
+    alternateName: d.nome_fantasia || undefined,
+    taxID: d.cnpj || undefined,
+    foundingDate: d.data_inicio_atividade || undefined,
+    url: `https://buscadeempresas.blendibox.com.br/?cnpj=${onlyDigits(d.cnpj)}`,
+    address: d.municipio
+      ? {
+          "@type": "PostalAddress",
+          streetAddress: [d.logradouro, d.numero].filter(Boolean).join(", ") || undefined,
+          addressLocality: d.municipio || undefined,
+          addressRegion: d.uf || undefined,
+          postalCode: d.cep || undefined,
+          addressCountry: "BR",
+        }
+      : undefined,
+  };
+  // remove chaves undefined
+  const limpo = JSON.parse(JSON.stringify(dados));
+  const script = document.createElement("script");
+  script.type = "application/ld+json";
+  script.id = "jsonld-empresa";
+  script.textContent = JSON.stringify(limpo);
+  document.head.appendChild(script);
+}
+
+function removerJsonLd() {
+  const el = document.getElementById("jsonld-empresa");
+  if (el) el.remove();
+}
+
+function setMeta(name, content) {
+  let el = document.querySelector(`meta[name="${name}"]`);
+  if (!el) {
+    el = document.createElement("meta");
+    el.setAttribute("name", name);
+    document.head.appendChild(el);
+  }
+  el.setAttribute("content", content);
+}
+
+function setCanonical(href) {
+  let el = document.querySelector('link[rel="canonical"]');
+  if (!el) {
+    el = document.createElement("link");
+    el.setAttribute("rel", "canonical");
+    document.head.appendChild(el);
+  }
+  el.setAttribute("href", href);
+}
+
+// Ao carregar a página com ?cnpj=..., já consulta automaticamente
+function iniciarPelaUrl() {
+  const params = new URLSearchParams(location.search);
+  const cnpj = onlyDigits(params.get("cnpj") || "");
+  if (cnpj.length === 14) {
+    input.value = formatarCnpj(cnpj);
+    consultar(cnpj);
+  }
+}
+
+// Botão voltar/avançar do navegador
+window.addEventListener("popstate", () => {
+  const params = new URLSearchParams(location.search);
+  const cnpj = onlyDigits(params.get("cnpj") || "");
+  if (cnpj.length === 14) {
+    input.value = formatarCnpj(cnpj);
+    consultar(cnpj);
+  } else {
+    boxResultado.hidden = true;
+    boxResultado.innerHTML = "";
+    restaurarSeoPadrao();
+  }
+});
+
+iniciarPelaUrl();
