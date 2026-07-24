@@ -15,25 +15,30 @@
 const BANNERS_URL = "https://comprar.blendibox.com.br/data/banners.json";
 const BANNERS_FALLBACK = "data/banners.sample.json";
 
-document.addEventListener("DOMContentLoaded", iniciarAnuncios);
-
-async function iniciarAnuncios() {
-  const produtos = await carregarProdutos();
-  if (!produtos.length) return;
-
-  // Áreas diferentes da página, cada uma com um recorte aleatório distinto.
-  const embaralhados = shuffle(produtos);
-  montarCarrossel(
-    document.getElementById("ads-topo"),
-    "Ofertas Blendibox",
-    embaralhados.slice(0, 8)
-  );
-  montarCarrossel(
-    document.getElementById("ads-rodape"),
-    "Você também pode gostar",
-    shuffle(produtos).slice(0, 8)
-  );
+// Carrega os produtos uma vez e reaproveita (mesma promise).
+let _produtosPromise = null;
+function getProdutos() {
+  if (!_produtosPromise) _produtosPromise = carregarProdutos();
+  return _produtosPromise;
 }
+
+async function montarEmContainer(id, titulo, n) {
+  const container = document.getElementById(id);
+  if (!container) return;
+  const produtos = await getProdutos();
+  if (!produtos.length) return;
+  montarCarrossel(container, titulo, shuffle(produtos).slice(0, n));
+}
+
+// Exposto para o app.js chamar ao renderizar um resultado (carrossel inline).
+window.Ads = {
+  inline: () => montarEmContainer("ads-inline", "Ofertas Blendibox", 8),
+};
+
+// Na carga da página, preenche só o rodapé (não ocupa a primeira dobra).
+document.addEventListener("DOMContentLoaded", () => {
+  montarEmContainer("ads-rodape", "Você também pode gostar", 8);
+});
 
 async function carregarProdutos() {
   for (const url of [BANNERS_URL, BANNERS_FALLBACK]) {

@@ -300,6 +300,8 @@ function renderizar(d, fonte) {
       </div>
     </div>
 
+    <div id="ads-inline" class="ads-area"></div>
+
     <div class="card">
       <h3 class="secao-titulo">Atividade principal</h3>
       <div class="item">
@@ -354,6 +356,7 @@ function renderizar(d, fonte) {
     </div>
   `;
   boxResultado.hidden = false;
+  if (window.Ads) window.Ads.inline(); // carrossel entre os cards
 }
 
 /* ------------------------- helpers ------------------------- */
@@ -521,7 +524,7 @@ if (modal) {
 /* ------------------------- SEO dinâmico + rota por URL ------------------------- */
 
 const SEO_PADRAO = {
-  titulo: "Consulta CNPJ Grátis — Busca de Empresas | Blendibox",
+  titulo: "Consulta CNPJ Grátis — Busca de Empresa | Blendibox",
   descricao:
     "Consulte CNPJ grátis: razão social, nome fantasia, situação cadastral, endereço, CNAE e quadro societário. Dados públicos da Receita Federal em segundos.",
 };
@@ -541,7 +544,7 @@ function atualizarSeoEmpresa(d) {
   const local = [d.municipio, d.uf].filter(Boolean).join("/");
   const situacao = d.descricao_situacao_cadastral || "";
 
-  document.title = `${razao} — CNPJ ${cnpjFmt} | Busca de Empresas Blendibox`;
+  document.title = `${razao} — CNPJ ${cnpjFmt} | Busca de Empresa Blendibox`;
   setMeta(
     "description",
     `${razao} (CNPJ ${cnpjFmt})${situacao ? " · " + situacao : ""}${local ? " · " + local : ""}${d.cnae_fiscal_descricao ? " · " + d.cnae_fiscal_descricao : ""}. Consulta grátis de CNPJ na Blendibox.`

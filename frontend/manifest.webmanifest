@@ -1,5 +1,5 @@
 {
-  "name": "Busca de Empresas Blendibox",
+  "name": "Busca de Empresa Blendibox",
   "short_name": "Busca CNPJ",
   "description": "Consulta de CNPJ grátis: razão social, situação cadastral, endereço, CNAE e sócios.",
   "start_url": "/",
