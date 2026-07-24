@@ -127,6 +127,30 @@ body {
 .socio { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .socio .qualif { color: var(--texto-fraco); font-size: 14px; }
 
+/* Botão "mostrar" contato */
+.btn-mostrar {
+  margin-left: 8px; font-size: 12px; padding: 2px 8px;
+  border: 1px solid var(--borda); background: var(--fundo);
+  color: var(--azul); border-radius: 6px; cursor: pointer;
+  transition: border-color .12s;
+}
+.btn-mostrar:hover { border-color: var(--azul); }
+.btn-mostrar:disabled { opacity: .6; cursor: default; }
+
+/* Lista de resultados por nome */
+.lista-resultados { list-style: none; padding: 0; margin: 0; }
+.lista-resultados .resultado-nome {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 16px; padding: 14px 8px; border-bottom: 1px solid var(--borda);
+  cursor: pointer; border-radius: 8px; transition: background .12s;
+}
+.lista-resultados .resultado-nome:last-child { border-bottom: none; }
+.lista-resultados .resultado-nome:hover { background: var(--fundo); }
+.resultado-razao { font-weight: 600; }
+.resultado-fantasia { font-size: 13px; color: var(--texto-fraco); margin-top: 2px; }
+.resultado-meta { text-align: right; font-size: 13px; white-space: nowrap; }
+.resultado-cidade { display: block; color: var(--texto-fraco); }
+
 .fonte-tag {
   display: inline-block; margin-top: 4px; font-size: 12px;
   color: var(--texto-fraco);

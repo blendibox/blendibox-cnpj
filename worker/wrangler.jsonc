@@ -22,7 +22,9 @@
 	// Configuracoes (dá pra mudar sem editar codigo)
 	"vars": {
 		"CACHE_TTL_DAYS": "30",
-		"MASK_SOCIOS": "true"
+		"MASK_SOCIOS": "true",
+		"MASK_CONTATO": "true",
+		"REVEAL_LIMIT_MIN": "10"
 	},
 	// Cron: todo dia as 03:00 UTC, atualiza um lote de registros vencidos.
 	"triggers": {

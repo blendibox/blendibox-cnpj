@@ -1,19 +1,22 @@
 -- Buscador de Empresas - Blendibox
--- Esquema do D1
+-- Esquema do D1 (instalacao nova)
 
 -- Cache de CNPJs consultados (nossa "base de consultas realizadas").
--- Guardamos o payload COMPLETO da BrasilAPI (sem mascarar);
--- a mascara de socios e aplicada na resposta ao usuario.
+-- Guardamos o payload COMPLETO da fonte (sem mascarar); as mascaras
+-- (socios e contato) sao aplicadas na resposta ao usuario.
 CREATE TABLE IF NOT EXISTS cnpj_cache (
-  cnpj       TEXT PRIMARY KEY,      -- 14 digitos, so numeros
-  payload    TEXT NOT NULL,         -- JSON completo da BrasilAPI
-  municipio  TEXT,
-  uf         TEXT,
-  updated_at TEXT NOT NULL          -- ISO 8601 (para calcular TTL)
+  cnpj          TEXT PRIMARY KEY,   -- 14 digitos, so numeros
+  payload       TEXT NOT NULL,      -- JSON completo da fonte
+  razao_social  TEXT,               -- desnormalizado p/ busca por nome
+  nome_fantasia TEXT,
+  municipio     TEXT,
+  uf            TEXT,
+  updated_at    TEXT NOT NULL       -- ISO 8601 (para calcular TTL)
 );
 
 CREATE INDEX IF NOT EXISTS idx_cache_updated ON cnpj_cache (updated_at);
 CREATE INDEX IF NOT EXISTS idx_cache_cidade  ON cnpj_cache (uf, municipio);
+CREATE INDEX IF NOT EXISTS idx_cache_razao   ON cnpj_cache (razao_social);
 
 -- Contador de demanda por cidade.
 -- Base para no futuro "promover" uma cidade inteira (importacao em lote).
@@ -24,3 +27,10 @@ CREATE TABLE IF NOT EXISTS city_demand (
   last_query TEXT,
   PRIMARY KEY (municipio, uf)
 );
+
+-- Janela deslizante de rate limit para a rota /contato (anti-scraping).
+CREATE TABLE IF NOT EXISTS reveal_rate (
+  ip TEXT NOT NULL,
+  ts INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_reveal_ip ON reveal_rate (ip, ts);

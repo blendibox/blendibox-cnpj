@@ -17,25 +17,147 @@ const boxResultado = document.getElementById("resultado");
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
-  const cnpj = onlyDigits(input.value);
+  const valor = input.value.trim();
+
+  // Tem letra? É busca por nome. Senão, é busca por CNPJ.
+  if (/[a-zA-ZÀ-ÿ]/.test(valor)) {
+    if (valor.length < 3) {
+      mostrarErro("Digite ao menos 3 caracteres do nome.");
+      return;
+    }
+    buscarPorNome(valor);
+    return;
+  }
+
+  const cnpj = onlyDigits(valor);
   if (cnpj.length !== 14) {
-    mostrarErro("Digite um CNPJ com 14 dígitos.");
+    mostrarErro("Digite um CNPJ com 14 dígitos ou o nome da empresa.");
     return;
   }
   consultar(cnpj);
 });
 
-// Formata o campo enquanto digita (00.000.000/0000-00)
+// Formata como CNPJ enquanto digita — só quando não há letras (nome).
 input.addEventListener("input", () => {
+  if (/[a-zA-ZÀ-ÿ]/.test(input.value)) return; // busca por nome: não formata
   const d = onlyDigits(input.value).slice(0, 14);
   input.value = formatarCnpj(d);
 });
 
-// Copiar para a área de transferência (delegação de evento nos botões)
+// Delegação de eventos no bloco de resultado
 boxResultado.addEventListener("click", (e) => {
-  const btn = e.target.closest(".btn-copiar");
-  if (btn) copiar(btn.dataset.copy || "");
+  const btnCopiar = e.target.closest(".btn-copiar");
+  if (btnCopiar) {
+    copiar(btnCopiar.dataset.copy || "");
+    return;
+  }
+
+  const btnMostrar = e.target.closest(".btn-mostrar");
+  if (btnMostrar) {
+    revelarContato(btnMostrar);
+    return;
+  }
+
+  const itemNome = e.target.closest(".resultado-nome");
+  if (itemNome) {
+    input.value = formatarCnpj(itemNome.dataset.cnpj);
+    consultar(itemNome.dataset.cnpj);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 });
+
+// Busca por nome dentro da base já cacheada
+async function buscarPorNome(nome) {
+  limparErro();
+  btn.disabled = true;
+  boxResultado.hidden = false;
+  boxResultado.innerHTML = `<div class="carregando">Buscando…</div>`;
+
+  try {
+    const res = await fetch(`${API_BASE}/buscar?nome=${encodeURIComponent(nome)}`);
+    const json = await res.json();
+
+    if (!res.ok) {
+      boxResultado.hidden = true;
+      mostrarErro(json.erro || "Não foi possível buscar.");
+      return;
+    }
+    renderizarListaNomes(json.resultados, nome);
+  } catch (_) {
+    boxResultado.hidden = true;
+    mostrarErro("Erro de conexão com o servidor.");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderizarListaNomes(lista, termo) {
+  if (!lista || lista.length === 0) {
+    boxResultado.innerHTML = `
+      <div class="card">
+        <p>Nenhuma empresa encontrada para <strong>${esc(termo)}</strong> na base já consultada.</p>
+        <p class="fonte-tag">A busca por nome cobre apenas empresas que já foram consultadas por CNPJ aqui.</p>
+      </div>`;
+    boxResultado.hidden = false;
+    return;
+  }
+
+  boxResultado.innerHTML = `
+    <div class="card">
+      <h3 class="secao-titulo">Resultados para "${esc(termo)}" (${lista.length})</h3>
+      <ul class="lista-resultados">
+        ${lista
+          .map(
+            (r) => `<li class="resultado-nome" data-cnpj="${esc(r.cnpj)}">
+              <div>
+                <div class="resultado-razao">${esc(r.razao_social) || "—"}</div>
+                ${r.nome_fantasia ? `<div class="resultado-fantasia">${esc(r.nome_fantasia)}</div>` : ""}
+              </div>
+              <div class="resultado-meta">
+                <span>${formatarCnpj(String(r.cnpj || ""))}</span>
+                <span class="resultado-cidade">${esc([r.municipio, r.uf].filter(Boolean).join(" - "))}</span>
+              </div>
+            </li>`
+          )
+          .join("")}
+      </ul>
+      <p class="fonte-tag">Cobre apenas empresas já consultadas por CNPJ. Clique para ver os detalhes.</p>
+    </div>`;
+  boxResultado.hidden = false;
+}
+
+// Revela e-mail/telefone completos (chama o endpoint com rate limit)
+async function revelarContato(botao) {
+  const cnpj = botao.dataset.cnpj;
+  const campo = botao.dataset.campo;
+  botao.disabled = true;
+  const original = botao.textContent;
+  botao.textContent = "…";
+
+  try {
+    const res = await fetch(`${API_BASE}/cnpj/${cnpj}/contato`);
+    const json = await res.json();
+    if (!res.ok) {
+      toast(json.erro || "Não foi possível revelar.");
+      botao.disabled = false;
+      botao.textContent = original;
+      return;
+    }
+    const valores = { telefone1: json.telefone1, telefone2: json.telefone2, email: json.email };
+    const completo = valores[campo];
+    const span = botao.parentElement.querySelector(
+      `.valor-contato[data-campo="${campo}"]`
+    );
+    if (span && completo) {
+      span.textContent = campo === "email" ? completo : formatarTelefone(completo);
+    }
+    botao.remove();
+  } catch (_) {
+    toast("Erro ao revelar contato.");
+    botao.disabled = false;
+    botao.textContent = original;
+  }
+}
 
 async function copiar(texto) {
   try {
@@ -179,8 +301,8 @@ function renderizar(d, fonte) {
         ${item("Logradouro", endereco)}
         ${item("Município / UF", cidadeUf)}
         ${item("CEP", formatarCep(d.cep))}
-        ${item("Telefone", d.ddd_telefone_1)}
-        ${item("E-mail", d.email)}
+        ${itemContato("Telefone", d.ddd_telefone_1, "telefone1", d.cnpj)}
+        ${itemContato("E-mail", d.email, "email", d.cnpj)}
       </div>
     </div>
 
@@ -211,6 +333,25 @@ function renderizar(d, fonte) {
 function item(rotulo, valor) {
   if (valor === null || valor === undefined || valor === "") return "";
   return `<div class="item"><div class="rotulo">${rotulo}</div><div class="valor">${esc(valor)}</div></div>`;
+}
+
+// Campo de contato mascarado + botão "mostrar" (revela via endpoint)
+function itemContato(rotulo, valorMasc, campo, cnpj) {
+  if (!valorMasc) return "";
+  return `<div class="item">
+    <div class="rotulo">${rotulo}</div>
+    <div class="valor">
+      <span class="valor-contato" data-campo="${campo}">${esc(valorMasc)}</span>
+      <button type="button" class="btn-mostrar" data-cnpj="${esc(onlyDigits(cnpj || ""))}" data-campo="${campo}" title="Mostrar ${rotulo.toLowerCase()} completo">mostrar</button>
+    </div>
+  </div>`;
+}
+
+function formatarTelefone(tel) {
+  const d = onlyDigits(tel);
+  if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return tel;
 }
 
 function codDesc(cod, desc) {

@@ -65,6 +65,17 @@ export default {
       );
     }
 
+    // Busca por nome na base ja cacheada: /buscar?nome=...
+    if (url.pathname === "/buscar" && request.method === "GET") {
+      return handleBuscaNome(url, env);
+    }
+
+    // Revelar contato completo (rate-limited): /cnpj/{cnpj}/contato
+    const mContato = url.pathname.match(/^\/cnpj\/([^/]+)\/contato\/?$/);
+    if (request.method === "GET" && mContato) {
+      return handleContato(mContato[1], request, env);
+    }
+
     // Rota principal: /cnpj/{cnpj}
     const match = url.pathname.match(/^\/cnpj\/([^/]+)\/?$/);
     if (request.method === "GET" && match) {
@@ -92,16 +103,12 @@ async function handleConsulta(cnpjRaw, env, ctx) {
   }
 
   const ttlDays = parseInt(env.CACHE_TTL_DAYS ?? "30", 10);
-  const mask = (env.MASK_SOCIOS ?? "true") === "true";
 
   // 1. Tenta o cache (D1)
   const cached = await getFromCache(env, cnpj);
   if (cached && !isStale(cached.updated_at, ttlDays)) {
     const data = JSON.parse(cached.payload);
-    return corsResponse(
-      { fonte: "cache", data: mask ? maskSocios(data) : data },
-      200
-    );
+    return corsResponse({ fonte: "cache", data: aplicarMascaras(data, env) }, 200);
   }
 
   // 2. Cache miss (ou vencido) -> consulta as fontes (minhareceita, depois BrasilAPI)
@@ -110,11 +117,8 @@ async function handleConsulta(cnpjRaw, env, ctx) {
   if (up.status === 200) {
     // 3. Grava no cache em background (nao atrasa a resposta)
     ctx.waitUntil(saveToCache(env, cnpj, up.data));
-    // 4. Devolve ao usuario (mascarado se configurado)
-    return corsResponse(
-      { fonte: up.fonte, data: mask ? maskSocios(up.data) : up.data },
-      200
-    );
+    // 4. Devolve ao usuario (mascarado)
+    return corsResponse({ fonte: up.fonte, data: aplicarMascaras(up.data, env) }, 200);
   }
 
   if (up.status === 404) {
@@ -125,7 +129,7 @@ async function handleConsulta(cnpjRaw, env, ctx) {
   if (cached) {
     const data = JSON.parse(cached.payload);
     return corsResponse(
-      { fonte: "cache-vencido", data: mask ? maskSocios(data) : data },
+      { fonte: "cache-vencido", data: aplicarMascaras(data, env) },
       200
     );
   }
@@ -135,6 +139,84 @@ async function handleConsulta(cnpjRaw, env, ctx) {
       ? "Limite das fontes de dados atingido, tente novamente em instantes"
       : "Fontes de dados indisponiveis no momento";
   return corsResponse({ erro: msg }, up.status === 429 ? 429 : 502);
+}
+
+/**
+ * Busca por nome dentro da base JA cacheada (empresas ja consultadas).
+ * Prioriza correspondencia exata; no parcial, traz ate 10 resultados.
+ */
+async function handleBuscaNome(url, env) {
+  const termo = (url.searchParams.get("nome") || "").trim();
+  if (termo.length < 3) {
+    return corsResponse({ erro: "Digite ao menos 3 caracteres." }, 400);
+  }
+
+  const like = `%${termo}%`;
+  const { results } = await env.DB.prepare(
+    `SELECT cnpj, razao_social, nome_fantasia, municipio, uf
+       FROM cnpj_cache
+      WHERE razao_social LIKE ? COLLATE NOCASE
+         OR nome_fantasia LIKE ? COLLATE NOCASE
+      ORDER BY CASE WHEN razao_social = ? COLLATE NOCASE THEN 0 ELSE 1 END,
+               LENGTH(razao_social) ASC
+      LIMIT 10`
+  )
+    .bind(like, like, termo)
+    .all();
+
+  return corsResponse({ termo, total: (results ?? []).length, resultados: results ?? [] }, 200);
+}
+
+/**
+ * Revela e-mail/telefone completos. Rate-limited por IP e apenas para
+ * CNPJs ja em cache (nao dispara nova consulta a fonte). Anti-scraping.
+ */
+async function handleContato(cnpjRaw, request, env) {
+  const cnpj = onlyDigits(cnpjRaw);
+  if (!isValidCnpj(cnpj)) {
+    return corsResponse({ erro: "CNPJ invalido" }, 400);
+  }
+
+  const ip = request.headers.get("CF-Connecting-IP") || "0.0.0.0";
+  const limite = parseInt(env.REVEAL_LIMIT_MIN ?? "10", 10);
+  const ok = await checkRateLimit(env, ip, limite, 60000);
+  if (!ok) {
+    return corsResponse({ erro: "Muitas solicitacoes. Aguarde um instante." }, 429);
+  }
+
+  const cached = await getFromCache(env, cnpj);
+  if (!cached) {
+    return corsResponse({ erro: "Consulte o CNPJ primeiro." }, 404);
+  }
+
+  const data = JSON.parse(cached.payload);
+  return corsResponse(
+    {
+      email: data.email ?? null,
+      telefone1: data.ddd_telefone_1 ?? null,
+      telefone2: data.ddd_telefone_2 ?? null,
+    },
+    200
+  );
+}
+
+/** Rate limit por IP usando janela deslizante no D1. */
+async function checkRateLimit(env, ip, limite, windowMs) {
+  const now = Date.now();
+  const cutoff = now - windowMs;
+  await env.DB.prepare("DELETE FROM reveal_rate WHERE ip = ? AND ts < ?")
+    .bind(ip, cutoff)
+    .run();
+  const row = await env.DB.prepare(
+    "SELECT COUNT(*) AS n FROM reveal_rate WHERE ip = ?"
+  )
+    .bind(ip)
+    .first();
+  if ((row?.n ?? 0) >= limite) return false;
+  await env.DB.prepare("INSERT INTO reveal_rate (ip, ts) VALUES (?, ?)")
+    .bind(ip, now)
+    .run();
+  return true;
 }
 
 /* ------------------------- D1 (cache) ------------------------- */
@@ -151,19 +233,23 @@ async function saveToCache(env, cnpj, data) {
   const now = new Date().toISOString();
   const municipio = data?.municipio ?? null;
   const uf = data?.uf ?? null;
+  const razao = data?.razao_social ?? null;
+  const fantasia = data?.nome_fantasia ?? null;
   const payload = JSON.stringify(data);
 
   // Upsert no cache
   await env.DB.prepare(
-    `INSERT INTO cnpj_cache (cnpj, payload, municipio, uf, updated_at)
-     VALUES (?, ?, ?, ?, ?)
+    `INSERT INTO cnpj_cache (cnpj, payload, razao_social, nome_fantasia, municipio, uf, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(cnpj) DO UPDATE SET
        payload = excluded.payload,
+       razao_social = excluded.razao_social,
+       nome_fantasia = excluded.nome_fantasia,
        municipio = excluded.municipio,
        uf = excluded.uf,
        updated_at = excluded.updated_at`
   )
-    .bind(cnpj, payload, municipio, uf, now)
+    .bind(cnpj, payload, razao, fantasia, municipio, uf, now)
     .run();
 
   // Conta demanda por cidade (para futura "promocao" de regiao)
@@ -236,6 +322,44 @@ function isValidCnpj(cnpj) {
   const d1 = calc(base12);
   const d2 = calc(base12 + d1);
   return cnpj === base12 + String(d1) + String(d2);
+}
+
+/** Aplica todas as mascaras configuradas (socios + contato). */
+function aplicarMascaras(data, env) {
+  let out = data;
+  if ((env.MASK_SOCIOS ?? "true") === "true") out = maskSocios(out);
+  if ((env.MASK_CONTATO ?? "true") === "true") out = maskContato(out);
+  return out;
+}
+
+/** Mascara e-mail e telefones (exibicao parcial; anti-scraping). */
+function maskContato(data) {
+  if (!data) return data;
+  return {
+    ...data,
+    email: maskEmail(data.email),
+    ddd_telefone_1: maskTelefone(data.ddd_telefone_1),
+    ddd_telefone_2: maskTelefone(data.ddd_telefone_2),
+  };
+}
+
+function maskEmail(email) {
+  if (!email) return email;
+  const [user, dom] = String(email).split("@");
+  if (!dom) return "***";
+  const u =
+    user.length <= 2
+      ? user[0] + "*"
+      : user.slice(0, 2) + "*".repeat(Math.max(1, user.length - 2));
+  return `${u}@${dom}`;
+}
+
+function maskTelefone(tel) {
+  if (!tel) return tel;
+  const d = String(tel).replace(/\D/g, "");
+  if (d.length < 6) return "***";
+  // Mantem os 2 primeiros (DDD parcial) e os 2 ultimos digitos
+  return d.slice(0, 2) + "*".repeat(d.length - 4) + d.slice(-2);
 }
 
 /** Mascara nome e documento dos socios (LGPD). Mantem o 1o nome. */
