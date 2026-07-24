@@ -65,6 +65,16 @@ export default {
       );
     }
 
+    // Solicitacao de remocao (opt-out LGPD): POST /optout
+    if (url.pathname === "/optout" && request.method === "POST") {
+      return handleOptout(request, env);
+    }
+
+    // Rotas de administracao (protegidas por token)
+    if (url.pathname.startsWith("/admin/")) {
+      return handleAdmin(url, request, env);
+    }
+
     // Busca por nome na base ja cacheada: /buscar?nome=...
     if (url.pathname === "/buscar" && request.method === "GET") {
       return handleBuscaNome(url, env);
@@ -100,6 +110,18 @@ async function handleConsulta(cnpjRaw, env, ctx) {
 
   if (!isValidCnpj(cnpj)) {
     return corsResponse({ erro: "CNPJ invalido" }, 400);
+  }
+
+  // 0. Empresa optou por sair dos resultados? (LGPD)
+  if (await isBlacklisted(env, cnpj)) {
+    return corsResponse(
+      {
+        removido: true,
+        mensagem:
+          "Esta empresa solicitou a remoção dos resultados de busca e não é mais exibida aqui.",
+      },
+      200
+    );
   }
 
   const ttlDays = parseInt(env.CACHE_TTL_DAYS ?? "30", 10);
@@ -217,6 +239,140 @@ async function checkRateLimit(env, ip, limite, windowMs) {
     .bind(ip, now)
     .run();
   return true;
+}
+
+/* ------------------------- Opt-out (LGPD) ------------------------- */
+
+async function isBlacklisted(env, cnpj) {
+  const row = await env.DB.prepare("SELECT 1 FROM blacklist WHERE cnpj = ?")
+    .bind(cnpj)
+    .first();
+  return !!row;
+}
+
+/** Recebe uma solicitacao de remocao e grava como 'pendente' (revisao manual). */
+async function handleOptout(request, env) {
+  let body;
+  try {
+    body = await request.json();
+  } catch (_) {
+    return corsResponse({ erro: "Corpo invalido." }, 400);
+  }
+
+  const cnpj = onlyDigits(body.cnpj || "");
+  const nome = (body.nome || "").toString().trim().slice(0, 120);
+  const vinculo = (body.vinculo || "").toString().trim().slice(0, 60);
+  const email = (body.email || "").toString().trim().slice(0, 120);
+  const motivo = (body.motivo || "").toString().trim().slice(0, 500);
+
+  if (!isValidCnpj(cnpj)) return corsResponse({ erro: "CNPJ invalido." }, 400);
+  if (nome.length < 3) return corsResponse({ erro: "Informe seu nome." }, 400);
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    return corsResponse({ erro: "Informe um e-mail valido." }, 400);
+  }
+
+  // Anti-spam por IP
+  const ip = request.headers.get("CF-Connecting-IP") || "0.0.0.0";
+  const ok = await checkRateLimit(env, ip, 5, 60000);
+  if (!ok) return corsResponse({ erro: "Muitas solicitacoes. Aguarde um instante." }, 429);
+
+  // Ja pendente?
+  const jaTem = await env.DB.prepare(
+    "SELECT 1 FROM optout_requests WHERE cnpj = ? AND status = 'pendente'"
+  )
+    .bind(cnpj)
+    .first();
+  if (jaTem) {
+    return corsResponse(
+      { ok: true, mensagem: "Já existe uma solicitação em análise para este CNPJ." },
+      200
+    );
+  }
+
+  const cached = await getFromCache(env, cnpj);
+  const razao = cached ? JSON.parse(cached.payload).razao_social ?? null : null;
+
+  await env.DB.prepare(
+    `INSERT INTO optout_requests
+       (cnpj, razao_social, nome_solicitante, vinculo, email_contato, motivo, status, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, 'pendente', ?)`
+  )
+    .bind(cnpj, razao, nome, vinculo, email, motivo, new Date().toISOString())
+    .run();
+
+  return corsResponse(
+    {
+      ok: true,
+      mensagem:
+        "Solicitação recebida. Após análise, a empresa será removida dos resultados.",
+    },
+    200
+  );
+}
+
+/**
+ * Rotas de administracao, protegidas pelo secret ADMIN_TOKEN:
+ *   GET  /admin/optout?token=...           -> lista solicitacoes pendentes
+ *   POST /admin/optout/aprovar {cnpj,token} -> blacklist + apaga cache
+ *   POST /admin/optout/rejeitar {id,token}  -> marca como rejeitada
+ */
+async function handleAdmin(url, request, env) {
+  if (!env.ADMIN_TOKEN) {
+    return corsResponse({ erro: "Admin desativado (configure ADMIN_TOKEN)." }, 501);
+  }
+
+  // Token via querystring (GET) ou corpo (POST)
+  let body = {};
+  if (request.method === "POST") {
+    try {
+      body = await request.json();
+    } catch (_) {
+      body = {};
+    }
+  }
+  const token = url.searchParams.get("token") || body.token || "";
+  if (token !== env.ADMIN_TOKEN) {
+    return corsResponse({ erro: "Nao autorizado." }, 401);
+  }
+
+  if (url.pathname === "/admin/optout" && request.method === "GET") {
+    const { results } = await env.DB.prepare(
+      "SELECT id, cnpj, razao_social, nome_solicitante, vinculo, email_contato, motivo, created_at FROM optout_requests WHERE status = 'pendente' ORDER BY created_at ASC"
+    ).all();
+    return corsResponse({ pendentes: results ?? [] }, 200);
+  }
+
+  if (url.pathname === "/admin/optout/aprovar" && request.method === "POST") {
+    const cnpj = onlyDigits(body.cnpj || "");
+    if (!isValidCnpj(cnpj)) return corsResponse({ erro: "CNPJ invalido." }, 400);
+    const now = new Date().toISOString();
+    await env.DB.prepare(
+      "INSERT INTO blacklist (cnpj, motivo, created_at) VALUES (?, 'opt-out', ?) ON CONFLICT(cnpj) DO NOTHING"
+    )
+      .bind(cnpj, now)
+      .run();
+    // Direito ao esquecimento: apaga o cache da empresa
+    await env.DB.prepare("DELETE FROM cnpj_cache WHERE cnpj = ?").bind(cnpj).run();
+    await env.DB.prepare(
+      "UPDATE optout_requests SET status = 'aprovada' WHERE cnpj = ? AND status = 'pendente'"
+    )
+      .bind(cnpj)
+      .run();
+    return corsResponse({ ok: true, mensagem: "Empresa removida dos resultados." }, 200);
+  }
+
+  if (url.pathname === "/admin/optout/rejeitar" && request.method === "POST") {
+    const id = parseInt(body.id, 10);
+    if (!id) return corsResponse({ erro: "id invalido." }, 400);
+    await env.DB.prepare(
+      "UPDATE optout_requests SET status = 'rejeitada' WHERE id = ?"
+    )
+      .bind(id)
+      .run();
+    return corsResponse({ ok: true }, 200);
+  }
+
+  return corsResponse({ erro: "Rota admin nao encontrada." }, 404);
 }
 
 /* ------------------------- D1 (cache) ------------------------- */
@@ -406,7 +562,7 @@ function sleep(ms) {
 function corsResponse(body, status = 200) {
   const headers = {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Cache-Control": "no-store",
   };

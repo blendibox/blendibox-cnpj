@@ -58,6 +58,12 @@ boxResultado.addEventListener("click", (e) => {
     return;
   }
 
+  const btnOptout = e.target.closest(".btn-optout");
+  if (btnOptout) {
+    abrirModalOptout(btnOptout.dataset.cnpj, btnOptout.dataset.razao);
+    return;
+  }
+
   const itemNome = e.target.closest(".resultado-nome");
   if (itemNome) {
     input.value = formatarCnpj(itemNome.dataset.cnpj);
@@ -211,6 +217,13 @@ async function consultar(cnpj) {
       return;
     }
 
+    if (json.removido) {
+      boxResultado.hidden = false;
+      boxResultado.innerHTML = `<div class="card card-removido"><p>🔒 ${esc(json.mensagem)}</p></div>`;
+      restaurarSeoPadrao();
+      return;
+    }
+
     renderizar(json.data, json.fonte);
     atualizarUrlEmpresa(cnpj);
     atualizarSeoEmpresa(json.data);
@@ -326,6 +339,14 @@ function renderizar(d, fonte) {
            </div>`
         : ""
     }
+
+    <div class="optout-linha">
+      <button type="button" class="btn-optout"
+        data-cnpj="${esc(onlyDigits(d.cnpj || ""))}"
+        data-razao="${esc(d.razao_social || "")}">
+        É a sua empresa? Solicitar remoção dos resultados (LGPD)
+      </button>
+    </div>
   `;
   boxResultado.hidden = false;
 }
@@ -414,6 +435,74 @@ function mostrarErro(msg) {
 function limparErro() {
   boxErro.hidden = true;
   boxErro.textContent = "";
+}
+
+/* ------------------------- Opt-out (LGPD) ------------------------- */
+
+const modal = document.getElementById("modal-optout");
+
+function abrirModalOptout(cnpj, razao) {
+  if (!modal) return;
+  modal.querySelector("#optout-cnpj").value = formatarCnpj(cnpj);
+  modal.querySelector("#optout-cnpj-raw").value = cnpj;
+  modal.querySelector("#optout-empresa").textContent = razao || formatarCnpj(cnpj);
+  modal.querySelector("#optout-msg").hidden = true;
+  modal.querySelector("#optout-form").hidden = false;
+  modal.querySelector("#optout-form").reset();
+  modal.querySelector("#optout-cnpj").value = formatarCnpj(cnpj);
+  modal.hidden = false;
+  document.body.style.overflow = "hidden";
+}
+
+function fecharModalOptout() {
+  if (!modal) return;
+  modal.hidden = true;
+  document.body.style.overflow = "";
+}
+
+if (modal) {
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal || e.target.closest("[data-fechar]")) fecharModalOptout();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !modal.hidden) fecharModalOptout();
+  });
+
+  modal.querySelector("#optout-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const dados = {
+      cnpj: modal.querySelector("#optout-cnpj-raw").value,
+      nome: modal.querySelector("#optout-nome").value.trim(),
+      vinculo: modal.querySelector("#optout-vinculo").value,
+      email: modal.querySelector("#optout-email").value.trim(),
+      motivo: modal.querySelector("#optout-motivo").value.trim(),
+    };
+    const btnEnviar = modal.querySelector("#optout-enviar");
+    btnEnviar.disabled = true;
+    btnEnviar.textContent = "Enviando…";
+
+    try {
+      const res = await fetch(`${API_BASE}/optout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dados),
+      });
+      const json = await res.json();
+      const box = modal.querySelector("#optout-msg");
+      box.hidden = false;
+      box.className = res.ok ? "optout-msg ok" : "optout-msg erro";
+      box.textContent = json.mensagem || json.erro || "Não foi possível enviar.";
+      if (res.ok) modal.querySelector("#optout-form").hidden = true;
+    } catch (_) {
+      const box = modal.querySelector("#optout-msg");
+      box.hidden = false;
+      box.className = "optout-msg erro";
+      box.textContent = "Erro de conexão. Tente novamente.";
+    } finally {
+      btnEnviar.disabled = false;
+      btnEnviar.textContent = "Enviar solicitação";
+    }
+  });
 }
 
 /* ------------------------- SEO dinâmico + rota por URL ------------------------- */

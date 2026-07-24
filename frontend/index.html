@@ -112,9 +112,58 @@
         Dados públicos da Receita Federal (Dados Abertos CNPJ).
         Informações de sócios são exibidas de forma parcial (LGPD).
       </p>
+      <p><a href="termos.html">Sobre os dados e privacidade (LGPD)</a></p>
       <p class="rodape-marca">Busca de Empresas — Blendibox</p>
     </div>
   </footer>
+
+  <!-- Modal de opt-out (LGPD) -->
+  <div id="modal-optout" class="modal" hidden>
+    <div class="modal-caixa" role="dialog" aria-modal="true" aria-labelledby="optout-titulo">
+      <button class="modal-fechar" data-fechar aria-label="Fechar">×</button>
+      <h2 id="optout-titulo">Solicitar remoção dos resultados</h2>
+      <p class="modal-sub">Empresa: <strong id="optout-empresa"></strong></p>
+
+      <div id="optout-msg" class="optout-msg" hidden></div>
+
+      <form id="optout-form">
+        <label>CNPJ
+          <input type="text" id="optout-cnpj" readonly />
+          <input type="hidden" id="optout-cnpj-raw" />
+        </label>
+        <label>Seu nome completo *
+          <input type="text" id="optout-nome" required maxlength="120" />
+        </label>
+        <label>Seu vínculo com a empresa *
+          <select id="optout-vinculo" required>
+            <option value="">Selecione…</option>
+            <option>Sócio(a) / Administrador(a)</option>
+            <option>Representante legal</option>
+            <option>Procurador(a)</option>
+            <option>Titular dos dados (sócio pessoa física)</option>
+            <option>Outro</option>
+          </select>
+        </label>
+        <label>E-mail de contato *
+          <input type="email" id="optout-email" required maxlength="120" />
+        </label>
+        <label>Motivo (opcional)
+          <textarea id="optout-motivo" rows="3" maxlength="500"></textarea>
+        </label>
+
+        <p class="optout-termos">
+          Os dados exibidos são <strong>públicos</strong>, obtidos dos Dados Abertos
+          de CNPJ da Receita Federal. Ao enviar, você declara ser representante da
+          empresa ou titular dos dados e solicita, com base na LGPD (Lei 13.709/2018),
+          a remoção desta empresa dos resultados de busca deste site. A solicitação
+          passa por análise antes da remoção. Usaremos seu e-mail apenas para tratar
+          este pedido.
+        </p>
+
+        <button type="submit" id="optout-enviar" class="busca-btn">Enviar solicitação</button>
+      </form>
+    </div>
+  </div>
 
   <script src="app.js"></script>
   <script src="ads.js"></script>
