@@ -91,6 +91,7 @@ async function buscarPorNome(nome) {
       return;
     }
     renderizarListaNomes(json.resultados, nome);
+    rolarParaResultado();
   } catch (_) {
     boxResultado.hidden = true;
     mostrarErro("Erro de conexão com o servidor.");
@@ -223,12 +224,14 @@ async function consultar(cnpj) {
       boxResultado.hidden = false;
       boxResultado.innerHTML = `<div class="card card-removido"><p>🔒 ${esc(json.mensagem)}</p></div>`;
       restaurarSeoPadrao();
+      rolarParaResultado();
       return;
     }
 
     renderizar(json.data, json.fonte);
     atualizarUrlEmpresa(cnpj);
     atualizarSeoEmpresa(json.data);
+    rolarParaResultado();
   } catch (err) {
     boxResultado.hidden = true;
     mostrarErro("Erro de conexão com o servidor. Verifique se a API está no ar.");
@@ -428,6 +431,14 @@ function esc(s) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+// Rola suavemente até o resultado, compensando o cabeçalho fixo
+function rolarParaResultado() {
+  requestAnimationFrame(() => {
+    const y = boxResultado.getBoundingClientRect().top + window.scrollY - 76;
+    window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+  });
 }
 
 function mostrarErro(msg) {
