@@ -1,0 +1,68 @@
+:root {
+  --azul: #1f6feb; --azul-esc: #164a99; --texto: #1a1f26; --fraco: #5b6672;
+  --borda: #e2e6eb; --fundo: #f5f7fa; --verde: #1a7f37; --vermelho: #cf222e;
+}
+* { box-sizing: border-box; }
+body {
+  width: 380px; margin: 0; background: #fff; color: var(--texto);
+  font: 14px/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.cab { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--borda); }
+.cab-icone { font-size: 18px; }
+.cab-txt strong { color: var(--azul); }
+
+#form { display: flex; gap: 8px; padding: 12px 14px; }
+#entrada { flex: 1; padding: 10px 12px; font-size: 15px; border: 1px solid var(--borda); border-radius: 8px; outline: none; }
+#entrada:focus { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(31,111,235,.15); }
+#form button { padding: 10px 16px; font-weight: 600; color: #fff; background: var(--azul); border: none; border-radius: 8px; cursor: pointer; }
+#form button:hover { background: var(--azul-esc); }
+#form button:disabled { opacity: .6; }
+
+.erro { margin: 0 14px 12px; padding: 10px 12px; background: #fff0f0; color: var(--vermelho); border: 1px solid #ffd0d0; border-radius: 8px; }
+
+#resultado { padding: 0 14px 12px; }
+.carregando { text-align: center; color: var(--fraco); padding: 20px; }
+
+.razao { font-size: 17px; font-weight: 700; margin: 4px 0; }
+.fantasia { color: var(--fraco); margin: 0 0 8px; font-size: 13px; }
+.cnpj-linha { color: var(--fraco); font-size: 13px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.cnpj-linha strong { color: var(--texto); }
+
+.badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.badge { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; }
+.badge.ok { background: #e6f4ea; color: var(--verde); }
+.badge.ruim { background: #fdecec; color: var(--vermelho); }
+.badge.neutro { background: #eef1f5; color: var(--fraco); }
+
+.resumo { background: var(--fundo); border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 10px; }
+
+.grade { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-bottom: 10px; }
+.item .rotulo { font-size: 11px; text-transform: uppercase; letter-spacing: .03em; color: var(--fraco); }
+.item .valor { font-size: 13px; }
+
+.secao { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--fraco); margin: 12px 0 6px; }
+.cnae { font-size: 13px; margin-bottom: 4px; }
+
+.acoes { display: flex; gap: 8px; margin: 10px 0; }
+.acoes a { flex: 1; text-align: center; text-decoration: none; font-size: 13px; font-weight: 600; padding: 9px; border-radius: 8px; border: 1px solid var(--borda); color: var(--texto); }
+.acoes a:hover { border-color: var(--azul); color: var(--azul); }
+
+.copiar { font-size: 11px; padding: 2px 8px; border: 1px solid var(--borda); background: var(--fundo); color: var(--fraco); border-radius: 6px; cursor: pointer; }
+.copiar:hover { border-color: var(--azul); color: var(--azul); }
+
+.socios { list-style: none; padding: 0; margin: 0; }
+.socios li { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--borda); font-size: 13px; }
+.socios li:last-child { border-bottom: none; }
+.socios .qualif { color: var(--fraco); font-size: 12px; }
+
+.ver-mais { display: block; text-align: center; margin-top: 10px; padding: 10px; background: var(--azul); color: #fff; text-decoration: none; font-weight: 600; border-radius: 8px; }
+.ver-mais:hover { background: var(--azul-esc); }
+
+.nota-lgpd { font-size: 11px; color: var(--fraco); margin-top: 6px; }
+
+.rodape { text-align: center; font-size: 11px; color: var(--fraco); padding: 10px; border-top: 1px solid var(--borda); }
+.rodape a { color: var(--azul); }
+
+#toast { position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); background: #1a1f26; color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 12px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+#toast.on { opacity: 1; }

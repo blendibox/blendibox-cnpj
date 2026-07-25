@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header class="cab">
+    <span class="cab-icone">🔎</span>
+    <span class="cab-txt">Busca de Empresa <strong>Blendibox</strong></span>
+  </header>
+
+  <form id="form" autocomplete="off">
+    <input id="entrada" type="text" placeholder="Digite o CNPJ" inputmode="numeric" />
+    <button type="submit">Buscar</button>
+  </form>
+
+  <p id="erro" class="erro" hidden></p>
+  <div id="resultado"></div>
+
+  <footer class="rodape">
+    Dados públicos da Receita Federal ·
+    <a href="https://buscadeempresa.blendibox.com.br" target="_blank" rel="noopener">abrir site</a>
+  </footer>
+
+  <script src="common.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
