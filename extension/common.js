@@ -106,6 +106,27 @@ function mapsLink(d) {
 function rotaLink(d) {
   return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(enderecoTexto(d));
 }
+// Mapa embutido (iframe do Google, sem chave)
+function mapaEmbedUrl(d) {
+  return "https://maps.google.com/maps?q=" + encodeURIComponent(enderecoTexto(d)) + "&z=15&output=embed";
+}
+// Geocodificação via Worker (para distância)
+async function geocodeCnpj(cnpj) {
+  try {
+    const r = await fetch(API_BASE + "/geocode?cnpj=" + onlyDigits(cnpj));
+    if (!r.ok) return null;
+    return await r.json();
+  } catch (_) {
+    return null;
+  }
+}
+// Distância em linha reta (km) entre dois pontos
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371, toR = (x) => (x * Math.PI) / 180;
+  const dLat = toR(lat2 - lat1), dLon = toR(lon2 - lon1);
+  const s = Math.sin(dLat / 2) ** 2 + Math.cos(toR(lat1)) * Math.cos(toR(lat2)) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
+}
 
 // "Conheça esta empresa" — resumo em linguagem simples, sem IA
 function resumoEmpresa(d) {

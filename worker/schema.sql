@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS cnpj_cache (
   uf            TEXT,
   hits          INTEGER NOT NULL DEFAULT 0,  -- nº de buscas (poda por demanda)
   last_hit      TEXT,                        -- última busca (ISO 8601)
+  lat           REAL,                        -- coordenada geocodificada
+  lon           REAL,
   updated_at    TEXT NOT NULL       -- ISO 8601 (para calcular TTL)
 );
 

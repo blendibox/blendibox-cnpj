@@ -133,10 +133,16 @@
   });
   document.addEventListener("click", (e) => {
     const s = e.target.closest && e.target.closest(".blndbx-cnpj");
-    if (s) {
-      e.preventDefault();
-      e.stopPropagation();
-      window.open(SITE_URL + "/?cnpj=" + s.dataset.cnpj, "_blank", "noopener");
+    if (!s) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const fallback = () => window.open(SITE_URL + "/?cnpj=" + s.dataset.cnpj, "_blank", "noopener");
+    try {
+      chrome.runtime.sendMessage({ tipo: "abrirCnpj", cnpj: s.dataset.cnpj }, () => {
+        if (chrome.runtime.lastError) fallback();
+      });
+    } catch (_) {
+      fallback();
     }
   });
 

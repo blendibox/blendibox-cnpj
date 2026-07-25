@@ -80,6 +80,11 @@ export default {
       return handleExport(url, env);
     }
 
+    // Geocodificacao (mapa + distancia): /geocode?cnpj=...
+    if (url.pathname === "/geocode" && request.method === "GET") {
+      return handleGeocode(url, env);
+    }
+
     // Busca por nome na base ja cacheada: /buscar?nome=...
     if (url.pathname === "/buscar" && request.method === "GET") {
       return handleBuscaNome(url, env);
@@ -427,6 +432,74 @@ async function saveToCache(env, cnpj, data) {
       .bind(municipio, uf, now)
       .run();
   }
+}
+
+/**
+ * Geocodifica o endereço do CNPJ (Nominatim/OSM) e guarda lat/lon no D1.
+ * Cada endereço é geocodificado só uma vez (cache).
+ */
+async function handleGeocode(url, env) {
+  const cnpj = onlyDigits(url.searchParams.get("cnpj") || "");
+  if (!isValidCnpj(cnpj)) return corsResponse({ erro: "CNPJ invalido" }, 400);
+
+  const row = await env.DB.prepare(
+    "SELECT payload, lat, lon FROM cnpj_cache WHERE cnpj = ?"
+  )
+    .bind(cnpj)
+    .first();
+  if (!row) return corsResponse({ erro: "Consulte o CNPJ primeiro." }, 404);
+  if (row.lat != null && row.lon != null) {
+    return corsResponse({ lat: row.lat, lon: row.lon, fonte: "cache" }, 200);
+  }
+
+  const d = JSON.parse(row.payload);
+
+  try {
+    let geo = null;
+    let aproximado = false;
+    // 1. tenta rua + cidade + estado (preciso)
+    if (d.logradouro && d.municipio) {
+      const street = [d.logradouro, d.numero].filter(Boolean).join(" ");
+      geo = await geoNominatim(
+        `street=${enc(street)}&city=${enc(d.municipio)}&state=${enc(d.uf || "")}`
+      );
+    }
+    // 2. fallback: centro do município (aproximado)
+    if (!geo && d.municipio) {
+      geo = await geoNominatim(
+        `city=${enc(d.municipio)}&state=${enc(d.uf || "")}&country=Brasil`
+      );
+      aproximado = true;
+    }
+    if (!geo) return corsResponse({ erro: "endereco nao localizado" }, 404);
+
+    await env.DB.prepare("UPDATE cnpj_cache SET lat = ?, lon = ? WHERE cnpj = ?")
+      .bind(geo.lat, geo.lon, cnpj)
+      .run();
+    return corsResponse({ lat: geo.lat, lon: geo.lon, aproximado }, 200);
+  } catch (_) {
+    return corsResponse({ erro: "geocode falhou" }, 502);
+  }
+}
+
+function enc(s) {
+  return encodeURIComponent((s || "").toString().trim());
+}
+
+async function geoNominatim(params) {
+  const r = await fetch(
+    "https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&" + params,
+    {
+      headers: {
+        "User-Agent": "BuscaDeEmpresaBlendibox/1.0 (lojablendibox@gmail.com)",
+        Accept: "application/json",
+      },
+    }
+  );
+  if (!r.ok) return null;
+  const arr = await r.json();
+  if (!arr.length) return null;
+  return { lat: parseFloat(arr[0].lat), lon: parseFloat(arr[0].lon) };
 }
 
 /** Incrementa o contador de buscas do CNPJ (para poda por demanda). */

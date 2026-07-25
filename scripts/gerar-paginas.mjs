@@ -100,6 +100,7 @@ async function escreverSitemap(urls) {
   const fixas = [
     `  <url><loc>${SITE_URL}/</loc><lastmod>${hoje}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>`,
     `  <url><loc>${SITE_URL}/termos.html</loc><lastmod>${hoje}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>`,
+    `  <url><loc>${SITE_URL}/privacidade.html</loc><lastmod>${hoje}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>`,
   ];
   const dinamicas = urls.map(
     (u) => `  <url><loc>${u.loc}</loc><lastmod>${u.lastmod || hoje}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>`

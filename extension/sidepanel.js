@@ -66,10 +66,12 @@ function render(d) {
     <div class="cnae">${esc(codDesc(d.cnae_fiscal, d.cnae_fiscal_descricao))}</div>
     <div class="secao">Endereço</div>
     <div class="cnae">${esc(enderecoTexto(d)) || "—"}</div>
+    <iframe class="mapa" src="${mapaEmbedUrl(d)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
     <div class="acoes">
-      <a href="${mapsLink(d)}" target="_blank" rel="noopener">📍 Ver no mapa</a>
+      <a href="${mapsLink(d)}" target="_blank" rel="noopener">📍 Abrir no Maps</a>
       <a href="${rotaLink(d)}" target="_blank" rel="noopener">🧭 Rota</a>
     </div>
+    <div class="distancia"><button class="btn-dist" type="button" data-cnpj="${onlyDigits(d.cnpj)}">📏 Distância até você</button></div>
     ${
       socios.length
         ? `<div class="secao">Sócios (${socios.length})</div>
@@ -84,15 +86,55 @@ function render(d) {
 }
 
 boxRes.addEventListener("click", async (e) => {
-  const b = e.target.closest(".copiar");
-  if (!b) return;
-  try {
-    await navigator.clipboard.writeText(b.dataset.copy);
-    toast("Copiado: " + b.dataset.copy);
-  } catch (_) {
-    toast("Não foi possível copiar");
+  const copy = e.target.closest(".copiar");
+  if (copy) {
+    try {
+      await navigator.clipboard.writeText(copy.dataset.copy);
+      toast("Copiado: " + copy.dataset.copy);
+    } catch (_) {
+      toast("Não foi possível copiar");
+    }
+    return;
   }
+  const dist = e.target.closest(".btn-dist");
+  if (dist) calcularDistancia(dist);
 });
+
+// Distância até você (geolocalização + geocode + haversine)
+let _minhaPos = null;
+function calcularDistancia(botao) {
+  botao.disabled = true;
+  botao.textContent = "📏 Calculando…";
+  const cnpj = botao.dataset.cnpj;
+
+  const seguir = async (pos) => {
+    _minhaPos = pos;
+    const geo = await geocodeCnpj(cnpj);
+    if (!geo || geo.lat == null) {
+      botao.disabled = false;
+      botao.textContent = "Endereço não localizado no mapa";
+      return;
+    }
+    const km = haversineKm(pos.lat, pos.lon, geo.lat, geo.lon);
+    const txt = km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1).replace(".", ",")} km`;
+    botao.parentElement.innerHTML =
+      `<span class="dist-ok">📍 A ≈ ${txt} de você${geo.aproximado ? " (aprox.)" : ""}</span>`;
+  };
+
+  if (_minhaPos) return seguir(_minhaPos);
+  if (!navigator.geolocation) {
+    botao.textContent = "Geolocalização indisponível";
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    (p) => seguir({ lat: p.coords.latitude, lon: p.coords.longitude }),
+    () => {
+      botao.disabled = false;
+      botao.textContent = "Permita a localização para calcular";
+    },
+    { enableHighAccuracy: false, timeout: 8000 }
+  );
+}
 
 /* ------------------------- histórico (cache do navegador) ------------------------- */
 
@@ -180,6 +222,29 @@ document.getElementById("hist-limpar").addEventListener("click", () => {
 
 // carrega o histórico ao abrir
 histGet().then(renderHistorico);
+
+// CNPJ clicado numa página (content script → background → storage)
+function abrirCnpj(c) {
+  const cnpj = onlyDigits(c);
+  if (!isValidCnpj(cnpj)) return;
+  entrada.value = formatarCnpj(cnpj);
+  boxErro.hidden = true;
+  buscar(cnpj);
+}
+if (typeof chrome !== "undefined" && chrome.storage) {
+  chrome.storage.local.get("pendingCnpj", (d) => {
+    if (d && d.pendingCnpj) {
+      chrome.storage.local.remove("pendingCnpj");
+      abrirCnpj(d.pendingCnpj);
+    }
+  });
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === "local" && changes.pendingCnpj && changes.pendingCnpj.newValue) {
+      chrome.storage.local.remove("pendingCnpj");
+      abrirCnpj(changes.pendingCnpj.newValue);
+    }
+  });
+}
 
 /* ------------------------- helpers ------------------------- */
 
