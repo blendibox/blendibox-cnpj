@@ -54,7 +54,7 @@
 
   /* ---------------- tooltip ---------------- */
 
-  let tip, esconderTimer;
+  let tip, esconderTimer, cnpjAtual = null;
   function elTip() {
     if (tip) return tip;
     tip = document.createElement("div");
@@ -62,8 +62,25 @@
     tip.style.display = "none";
     tip.addEventListener("mouseenter", () => clearTimeout(esconderTimer));
     tip.addEventListener("mouseleave", esconder);
+    // O tooltip inteiro é clicável: abre o painel com o CNPJ
+    tip.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (tip.dataset.cnpj) abrirPainel(tip.dataset.cnpj);
+    });
     (document.body || document.documentElement).appendChild(tip);
     return tip;
+  }
+
+  function abrirPainel(cnpj) {
+    const fallback = () => window.open(SITE_URL + "/?cnpj=" + cnpj, "_blank", "noopener");
+    try {
+      chrome.runtime.sendMessage({ tipo: "abrirCnpj", cnpj }, () => {
+        if (chrome.runtime.lastError) fallback();
+      });
+    } catch (_) {
+      fallback();
+    }
   }
 
   function posicionar(span) {
@@ -79,13 +96,14 @@
   async function mostrar(span) {
     clearTimeout(esconderTimer);
     const cnpj = span.dataset.cnpj;
+    cnpjAtual = cnpj;
     const t = elTip();
+    t.dataset.cnpj = cnpj; // disponível para o clique imediatamente
     posicionar(span);
     t.innerHTML = `<div class="blndbx-tip-load">Consultando ${formatarCnpj(cnpj)}…</div>`;
     const r = await getEmpresa(cnpj);
-    // se o mouse já saiu e outro CNPJ está ativo, ignora
-    if (t.dataset.cnpj && t.dataset.cnpj !== cnpj) return;
-    t.dataset.cnpj = cnpj;
+    // se outro CNPJ assumiu enquanto carregava, ignora
+    if (cnpjAtual !== cnpj) return;
     if (!r.ok || r.removido) {
       t.innerHTML = `<div class="blndbx-tip-erro">${esc(r.mensagem || r.erro || "Não foi possível consultar.")}</div>`;
       return;
@@ -136,14 +154,7 @@
     if (!s) return;
     e.preventDefault();
     e.stopPropagation();
-    const fallback = () => window.open(SITE_URL + "/?cnpj=" + s.dataset.cnpj, "_blank", "noopener");
-    try {
-      chrome.runtime.sendMessage({ tipo: "abrirCnpj", cnpj: s.dataset.cnpj }, () => {
-        if (chrome.runtime.lastError) fallback();
-      });
-    } catch (_) {
-      fallback();
-    }
+    abrirPainel(s.dataset.cnpj);
   });
 
   /* ---------------- inicialização + páginas dinâmicas ---------------- */
