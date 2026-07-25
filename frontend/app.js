@@ -10,6 +10,7 @@
 const CFG = window.APP_CONFIG || {};
 const API_BASE = CFG.API_BASE || "https://buscador-empresas-blendibox.blendibox.workers.dev";
 const SITE_URL = (CFG.SITE_URL || "https://buscadeempresa.blendibox.com.br").replace(/\/$/, "");
+const STORE_URL = CFG.CHROME_STORE_URL || "";
 
 const form = document.getElementById("form-busca");
 const input = document.getElementById("entrada-cnpj");
@@ -91,6 +92,7 @@ async function buscarPorNome(nome) {
       return;
     }
     renderizarListaNomes(json.resultados, nome);
+    esconderLanding();
     rolarParaResultado();
   } catch (_) {
     boxResultado.hidden = true;
@@ -224,6 +226,7 @@ async function consultar(cnpj) {
       boxResultado.hidden = false;
       boxResultado.innerHTML = `<div class="card card-removido"><p>🔒 ${esc(json.mensagem)}</p></div>`;
       restaurarSeoPadrao();
+      esconderLanding();
       rolarParaResultado();
       return;
     }
@@ -231,6 +234,7 @@ async function consultar(cnpj) {
     renderizar(json.data, json.fonte);
     atualizarUrlEmpresa(cnpj);
     atualizarSeoEmpresa(json.data);
+    esconderLanding();
     rolarParaResultado();
   } catch (err) {
     boxResultado.hidden = true;
@@ -454,6 +458,30 @@ function esc(s) {
     .replace(/"/g, "&quot;");
 }
 
+// Landing da extensão: some quando há resultado, volta na home
+function esconderLanding() {
+  document.body.classList.add("com-resultado");
+}
+function mostrarLanding() {
+  document.body.classList.remove("com-resultado");
+}
+
+// Botões "Adicionar ao Chrome": link da loja (ou "em breve")
+function ligarBotoesExtensao() {
+  document.querySelectorAll("[data-store]").forEach((a) => {
+    if (STORE_URL) {
+      a.href = STORE_URL;
+      a.target = "_blank";
+      a.rel = "noopener";
+    } else {
+      a.classList.add("em-breve");
+      a.textContent = "🔜 Em breve na Chrome Web Store";
+      a.addEventListener("click", (e) => e.preventDefault());
+    }
+  });
+}
+ligarBotoesExtensao();
+
 // Rola suavemente até o resultado, compensando o cabeçalho fixo
 function rolarParaResultado() {
   requestAnimationFrame(() => {
@@ -655,6 +683,7 @@ window.addEventListener("popstate", () => {
     boxResultado.hidden = true;
     boxResultado.innerHTML = "";
     restaurarSeoPadrao();
+    mostrarLanding();
   }
 });
 
