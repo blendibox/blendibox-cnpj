@@ -8,6 +8,7 @@
   <header class="cab">
     <span class="cab-icone">🔎</span>
     <span class="cab-txt">Busca de Empresa <strong>Blendibox</strong></span>
+    <a class="cab-site" href="https://buscadeempresa.blendibox.com.br" target="_blank" rel="noopener">site ↗</a>
   </header>
 
   <form id="form" autocomplete="off">
@@ -15,15 +16,22 @@
     <button type="submit">Buscar</button>
   </form>
 
-  <p id="erro" class="erro" hidden></p>
-  <div id="resultado"></div>
+  <div id="conteudo">
+    <p id="erro" class="erro" hidden></p>
+    <div id="resultado"></div>
+  </div>
 
-  <footer class="rodape">
-    Dados públicos da Receita Federal ·
-    <a href="https://buscadeempresa.blendibox.com.br" target="_blank" rel="noopener">abrir site</a>
-  </footer>
+  <!-- Rodapé fixo: espaço publicitário (feed próprio) -->
+  <section id="ofertas" class="ofertas" hidden>
+    <div class="ofertas-cab">
+      <span class="ofertas-tit">Ofertas Blendibox</span>
+      <span class="ofertas-tag">Patrocinado</span>
+    </div>
+    <div id="ofertas-track" class="ofertas-track"></div>
+  </section>
 
   <script src="common.js"></script>
   <script src="popup.js"></script>
+  <script src="ads-popup.js"></script>
 </body>
 </html>

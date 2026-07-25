@@ -6,7 +6,8 @@
   "default_locale": "pt_BR",
   "permissions": ["storage"],
   "host_permissions": [
-    "https://buscador-empresas-blendibox.blendibox.workers.dev/*"
+    "https://buscador-empresas-blendibox.blendibox.workers.dev/*",
+    "https://comprar.blendibox.com.br/*"
   ],
   "action": {
     "default_popup": "popup.html",
