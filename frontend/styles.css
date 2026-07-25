@@ -267,6 +267,10 @@ body.com-resultado .landing { display: none; } /* some quando há resultado */
 
 .ext-cta { text-align: center; background: var(--fundo); border: 1px solid var(--borda); border-radius: 16px; padding: 30px 20px; }
 .ext-cta h3 { font-size: 21px; margin: 0 0 18px; }
+/* Botão no bloco claro: precisa contrastar com fundo claro (não usar o estilo do hero azul) */
+.ext-cta .btn-extensao { background: var(--azul); color: #fff; }
+.ext-cta .btn-extensao:hover { background: var(--azul-escuro); }
+.ext-cta .btn-extensao.em-breve { background: #fff; color: var(--texto-fraco); border: 1px solid var(--borda); box-shadow: none; cursor: default; }
 
 @media (max-width: 720px) {
   .ext-hero { flex-direction: column; text-align: center; padding: 24px 20px; }
