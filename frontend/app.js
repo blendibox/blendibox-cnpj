@@ -234,6 +234,7 @@ async function consultar(cnpj) {
     renderizar(json.data, json.fonte);
     atualizarUrlEmpresa(cnpj);
     atualizarSeoEmpresa(json.data);
+    adicionarHistorico(json.data);
     esconderLanding();
     rolarParaResultado();
   } catch (err) {
@@ -457,6 +458,78 @@ function esc(s) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 }
+
+/* ------------------------- Histórico de consultas ------------------------- */
+
+function histGet() {
+  try { return JSON.parse(localStorage.getItem("historico") || "[]"); }
+  catch (_) { return []; }
+}
+function histSet(a) {
+  try { localStorage.setItem("historico", JSON.stringify(a)); } catch (_) {}
+}
+function adicionarHistorico(d) {
+  const cnpj = onlyDigits(d.cnpj);
+  if (cnpj.length !== 14) return;
+  let a = histGet().filter((x) => x.cnpj !== cnpj);
+  a.unshift({ cnpj, razao: d.razao_social || "", ts: Date.now() });
+  a = a.slice(0, 12);
+  histSet(a);
+  renderHistorico(a);
+}
+function renderHistorico(a) {
+  const sec = document.getElementById("historico");
+  const ul = document.getElementById("hist-lista");
+  if (!sec || !ul) return;
+  if (!a || !a.length) { sec.hidden = true; ul.innerHTML = ""; return; }
+  sec.hidden = false;
+  ul.innerHTML = a
+    .map(
+      (h) => `<li class="hist-item" data-cnpj="${esc(h.cnpj)}">
+        <span class="hist-ic">🔎</span>
+        <div class="hist-info">
+          <div class="hist-razao">${esc(h.razao) || formatarCnpj(h.cnpj)}</div>
+          <div class="hist-meta">${formatarCnpj(h.cnpj)} · ${dataHora(h.ts)}</div>
+        </div>
+        <button class="hist-del" data-cnpj="${esc(h.cnpj)}" title="Remover" aria-label="Remover">×</button>
+      </li>`
+    )
+    .join("");
+}
+function dataHora(ts) {
+  try {
+    return new Date(ts).toLocaleString("pt-BR", {
+      day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit",
+    });
+  } catch (_) { return ""; }
+}
+
+(function ligarHistorico() {
+  const ul = document.getElementById("hist-lista");
+  const limpar = document.getElementById("hist-limpar");
+  if (ul) {
+    ul.addEventListener("click", (e) => {
+      const del = e.target.closest(".hist-del");
+      if (del) {
+        e.stopPropagation();
+        const a = histGet().filter((x) => x.cnpj !== del.dataset.cnpj);
+        histSet(a);
+        renderHistorico(a);
+        return;
+      }
+      const item = e.target.closest(".hist-item");
+      if (item) {
+        input.value = formatarCnpj(item.dataset.cnpj);
+        consultar(item.dataset.cnpj);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    });
+  }
+  if (limpar) {
+    limpar.addEventListener("click", () => { histSet([]); renderHistorico([]); });
+  }
+  renderHistorico(histGet());
+})();
 
 // Landing da extensão: some quando há resultado, volta na home
 function esconderLanding() {

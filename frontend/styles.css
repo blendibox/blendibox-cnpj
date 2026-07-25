@@ -163,6 +163,33 @@ body {
   color: var(--texto-fraco);
 }
 
+/* Histórico de consultas (atalhos) */
+.historico { margin: 8px 0 24px; }
+.hist-cab { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.hist-cab span { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--texto-fraco); }
+#hist-limpar { background: none; border: none; color: var(--azul); font-size: 13px; cursor: pointer; }
+#hist-limpar:hover { text-decoration: underline; }
+#hist-lista { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.hist-item {
+  position: relative; display: flex; align-items: center; gap: 10px;
+  background: var(--card); border: 1px solid var(--borda); border-radius: 10px;
+  padding: 10px 12px; cursor: pointer; transition: border-color .12s, box-shadow .12s;
+}
+.hist-item:hover { border-color: var(--azul); box-shadow: var(--sombra); }
+.hist-ic { font-size: 17px; }
+.hist-info { flex: 1; min-width: 0; }
+.hist-razao { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hist-meta { font-size: 11px; color: var(--texto-fraco); }
+.hist-del {
+  position: absolute; top: 5px; right: 5px; background: none; border: none;
+  color: var(--texto-fraco); font-size: 16px; line-height: 1; cursor: pointer;
+  opacity: 0; padding: 2px 6px; border-radius: 6px;
+}
+.hist-item:hover .hist-del { opacity: 1; }
+.hist-del:hover { color: var(--vermelho); background: #fdecec; }
+@media (max-width: 720px) { #hist-lista { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { #hist-lista { grid-template-columns: 1fr; } }
+
 /* Barra fina da extensão (aparece nas páginas de resultado) */
 .ext-bar {
   display: none; align-items: center; gap: 12px;
