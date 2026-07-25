@@ -1,13 +1,13 @@
 :root {
-  --azul: #1f6feb;
-  --azul-escuro: #164a99;
+  --azul: #1560d0;        /* escurecido p/ contraste AA (branco no botão e azul em texto) */
+  --azul-escuro: #12408a;
   --texto: #1a1f26;
   --texto-fraco: #5b6672;
   --borda: #e2e6eb;
   --fundo: #f5f7fa;
   --card: #ffffff;
-  --verde: #1a7f37;
-  --vermelho: #cf222e;
+  --verde: #166534;       /* verde mais escuro p/ contraste na badge clara */
+  --vermelho: #c01c28;
   --amarelo: #9a6700;
   --sombra: 0 1px 3px rgba(0, 0, 0, .08), 0 1px 2px rgba(0, 0, 0, .04);
   --raio: 12px;
@@ -193,7 +193,7 @@ body {
 /* Barra fina da extensão (aparece nas páginas de resultado) */
 .ext-bar {
   display: none; align-items: center; gap: 12px;
-  background: linear-gradient(135deg, #1f6feb, #164a99); color: #fff;
+  background: linear-gradient(135deg, var(--azul), var(--azul-escuro)); color: #fff;
   padding: 8px 14px; border-radius: 10px; margin: 12px 0; font-size: 14px;
 }
 body.com-resultado .ext-bar { display: flex; }
@@ -214,7 +214,7 @@ body.com-resultado .landing { display: none; } /* some quando há resultado */
 
 .ext-hero {
   display: flex; gap: 28px; align-items: center;
-  background: linear-gradient(135deg, #1f6feb, #164a99);
+  background: linear-gradient(135deg, var(--azul), var(--azul-escuro));
   color: #fff; border-radius: 16px; padding: 28px; margin-bottom: 32px;
 }
 .ext-hero-txt { flex: 1; }
