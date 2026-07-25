@@ -163,6 +163,24 @@ body {
   color: var(--texto-fraco);
 }
 
+/* Barra fina da extensão (aparece nas páginas de resultado) */
+.ext-bar {
+  display: none; align-items: center; gap: 12px;
+  background: linear-gradient(135deg, #1f6feb, #164a99); color: #fff;
+  padding: 8px 14px; border-radius: 10px; margin: 12px 0; font-size: 14px;
+}
+body.com-resultado .ext-bar { display: flex; }
+body.ext-bar-off .ext-bar { display: none !important; }
+.ext-bar-txt { flex: 1; }
+.ext-bar .ext-bar-btn { background: #fff; color: var(--azul); padding: 6px 14px; font-size: 13px; border-radius: 8px; box-shadow: none; }
+.ext-bar .ext-bar-btn.em-breve { background: rgba(255, 255, 255, .22); color: #fff; }
+.ext-bar-x { background: none; border: none; color: #fff; font-size: 20px; line-height: 1; cursor: pointer; opacity: .8; padding: 0 4px; }
+.ext-bar-x:hover { opacity: 1; }
+@media (max-width: 560px) {
+  .ext-bar { flex-wrap: wrap; }
+  .ext-bar-txt { flex-basis: 100%; }
+}
+
 /* ---------------- Landing da extensão ---------------- */
 .landing { padding: 24px 0 8px; }
 body.com-resultado .landing { display: none; } /* some quando há resultado */

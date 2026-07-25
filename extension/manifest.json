@@ -3,15 +3,19 @@
   "name": "Busca de Empresa - Blendibox",
   "version": "1.0.0",
   "description": "Consulte CNPJ em qualquer página. Detecta CNPJs automaticamente e mostra a empresa ao passar o mouse.",
-  "default_locale": "pt_BR",
-  "permissions": ["storage"],
+  "permissions": ["storage", "sidePanel"],
   "host_permissions": [
     "https://buscador-empresas-blendibox.blendibox.workers.dev/*",
     "https://comprar.blendibox.com.br/*"
   ],
   "action": {
-    "default_popup": "popup.html",
-    "default_title": "Busca de Empresa - Blendibox"
+    "default_title": "Busca de Empresa - Blendibox (abrir painel)"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "background": {
+    "service_worker": "background.js"
   },
   "icons": {
     "16": "icons/icon16.png",

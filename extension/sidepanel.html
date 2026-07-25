@@ -17,6 +17,15 @@
   </form>
 
   <div id="conteudo">
+    <!-- Histórico: abaixo da busca (preenche a home) e acima do resultado -->
+    <section id="historico" class="historico" hidden>
+      <div class="hist-cab">
+        <span>Consultas recentes</span>
+        <button id="hist-limpar" type="button">limpar</button>
+      </div>
+      <ul id="hist-lista"></ul>
+    </section>
+
     <p id="erro" class="erro" hidden></p>
     <div id="resultado"></div>
   </div>
@@ -31,7 +40,7 @@
   </section>
 
   <script src="common.js"></script>
-  <script src="popup.js"></script>
+  <script src="sidepanel.js"></script>
   <script src="ads-popup.js"></script>
 </body>
 </html>

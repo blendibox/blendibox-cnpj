@@ -475,10 +475,22 @@ function ligarBotoesExtensao() {
       a.rel = "noopener";
     } else {
       a.classList.add("em-breve");
-      a.textContent = "🔜 Em breve na Chrome Web Store";
+      a.textContent = a.classList.contains("ext-bar-btn") ? "🔜 Em breve" : "🔜 Em breve na Chrome Web Store";
       a.addEventListener("click", (e) => e.preventDefault());
     }
   });
+
+  // Barra fina: fechar (com memória)
+  try {
+    if (localStorage.getItem("extBarOff") === "1") document.body.classList.add("ext-bar-off");
+  } catch (_) {}
+  const x = document.querySelector(".ext-bar-x");
+  if (x) {
+    x.addEventListener("click", () => {
+      document.body.classList.add("ext-bar-off");
+      try { localStorage.setItem("extBarOff", "1"); } catch (_) {}
+    });
+  }
 }
 ligarBotoesExtensao();
 

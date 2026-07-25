@@ -4,7 +4,7 @@
 }
 * { box-sizing: border-box; }
 body {
-  width: 380px; height: 560px; margin: 0; background: #fff; color: var(--texto);
+  width: 100%; min-width: 300px; height: 100vh; margin: 0; background: #fff; color: var(--texto);
   display: flex; flex-direction: column; overflow: hidden;
   font: 14px/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
@@ -28,6 +28,20 @@ body {
 
 #resultado { padding: 0 14px 12px; }
 .carregando { text-align: center; color: var(--fraco); padding: 20px; }
+
+/* Histórico */
+.historico { padding: 4px 14px 8px; }
+.hist-cab { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.hist-cab span { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--fraco); }
+#hist-limpar { background: none; border: none; color: var(--azul); font-size: 12px; cursor: pointer; padding: 2px 4px; }
+#hist-lista { list-style: none; margin: 0; padding: 0; }
+.hist-item { display: flex; align-items: center; gap: 8px; padding: 8px 6px; border-radius: 8px; cursor: pointer; }
+.hist-item:hover { background: var(--fundo); }
+.hist-info { flex: 1; min-width: 0; }
+.hist-razao { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hist-meta { font-size: 11px; color: var(--fraco); }
+.hist-del { background: none; border: none; color: var(--fraco); font-size: 18px; line-height: 1; cursor: pointer; padding: 0 4px; border-radius: 6px; }
+.hist-del:hover { color: var(--vermelho); background: #fdecec; }
 
 .razao { font-size: 17px; font-weight: 700; margin: 4px 0; }
 .fantasia { color: var(--fraco); margin: 0 0 8px; font-size: 13px; }
