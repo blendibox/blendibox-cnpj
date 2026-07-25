@@ -265,6 +265,20 @@ body.com-resultado .landing { display: none; } /* some quando há resultado */
   padding: 8px 16px; font-size: 14px; color: var(--texto);
 }
 
+.faq { max-width: 760px; margin: 0 auto 32px; }
+.faq details {
+  background: var(--card); border: 1px solid var(--borda); border-radius: 10px;
+  padding: 4px 16px; margin-bottom: 10px;
+}
+.faq summary {
+  cursor: pointer; font-weight: 600; padding: 12px 0; list-style: none;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; color: var(--azul); font-size: 20px; font-weight: 400; }
+.faq details[open] summary::after { content: "–"; }
+.faq details p { margin: 0 0 14px; color: var(--texto-fraco); line-height: 1.6; }
+
 .ext-cta { text-align: center; background: var(--fundo); border: 1px solid var(--borda); border-radius: 16px; padding: 30px 20px; }
 .ext-cta h3 { font-size: 21px; margin: 0 0 18px; }
 /* Botão no bloco claro: precisa contrastar com fundo claro (não usar o estilo do hero azul) */

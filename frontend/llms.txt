@@ -1,0 +1,29 @@
+# Busca de Empresa - Blendibox
+
+> Consulta gratuita de CNPJ com dados públicos da Receita Federal do Brasil: razão social, nome fantasia, situação cadastral, natureza jurídica, porte, data de abertura, endereço, atividades econômicas (CNAE) e quadro societário. Disponível como site e como extensão gratuita para o Google Chrome.
+
+Busca de Empresa é uma ferramenta gratuita da Blendibox para consultar empresas brasileiras pelo CNPJ ou pelo nome. Os dados são públicos, obtidos dos Dados Abertos de CNPJ da Receita Federal. Nomes e documentos de sócios são exibidos de forma parcial, respeitando a LGPD.
+
+## Como usar
+- Consulta por CNPJ: acesse `https://buscadeempresa.blendibox.com.br/?cnpj=00000000000191` (14 dígitos, só números).
+- Cada empresa consultada também tem uma página própria em `https://buscadeempresa.blendibox.com.br/empresa/{nome-da-empresa}-{cnpj}/`.
+- Busca por nome: digite o nome da empresa no campo de busca do site.
+
+## Páginas principais
+- [Início / Consulta de CNPJ](https://buscadeempresa.blendibox.com.br/): busca por CNPJ ou nome da empresa.
+- [Sitemap](https://buscadeempresa.blendibox.com.br/sitemap.xml): lista de páginas indexáveis, incluindo empresas já consultadas.
+- [Sobre os dados e LGPD](https://buscadeempresa.blendibox.com.br/termos.html): origem dos dados e como solicitar remoção.
+- [Política de Privacidade](https://buscadeempresa.blendibox.com.br/privacidade.html)
+
+## O que a ferramenta responde
+- Razão social e nome fantasia da empresa
+- Situação cadastral (ativa, baixada, etc.) e data
+- Natureza jurídica e porte
+- Data de abertura / tempo de mercado
+- Endereço completo e mapa
+- CNAE (atividade principal e secundárias)
+- Quadro societário (parcial, por privacidade)
+- Opção pelo Simples Nacional e MEI
+
+## Sobre
+Projeto da Blendibox (loja em https://comprar.blendibox.com.br). Contato: atendimento@blendibox.com.br.

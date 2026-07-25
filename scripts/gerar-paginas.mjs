@@ -162,7 +162,7 @@ function paginaEmpresa(d, rota) {
   <title>${esc(razao)} — CNPJ ${cnpjFmt} | Busca de Empresa Blendibox</title>
   <meta name="description" content="${esc(desc)}" />
   <link rel="canonical" href="${canonical}" />
-  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
   <meta name="theme-color" content="#1f6feb" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Busca de Empresa Blendibox" />
