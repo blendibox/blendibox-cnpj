@@ -491,7 +491,7 @@ async function geoNominatim(params) {
     "https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&" + params,
     {
       headers: {
-        "User-Agent": "BuscaDeEmpresaBlendibox/1.0 (lojablendibox@gmail.com)",
+        "User-Agent": "BuscaDeEmpresaBlendibox/1.0 (atendimento@blendibox.com.br)",
         Accept: "application/json",
       },
     }
