@@ -1,0 +1,45 @@
+# Empresas notáveis (alta procura) — semente inicial de teste.
+# Formato: CNPJ (com ou sem pontuação) # nome (o nome é só comentário)
+# CNPJs inválidos/inexistentes são pulados automaticamente.
+
+# --- Bancos / financeiro ---
+00000000000191 # Banco do Brasil
+00360305000104 # Caixa Econômica Federal
+60701190000104 # Itaú Unibanco
+60746948000112 # Bradesco
+90400888000142 # Santander Brasil
+18236120000158 # Nubank (Nu Pagamentos)
+01027058000191 # Cielo
+09346601000125 # B3
+
+# --- Energia / óleo / mineração ---
+33000167000101 # Petrobras
+33592510000154 # Vale
+00001180000126 # Eletrobras
+33256439000139 # Ultrapar
+
+# --- Varejo / consumo ---
+47960950000121 # Magazine Luiza
+92754738000162 # Lojas Renner
+61585865000151 # Raia Drogasil
+71673990000177 # Natura
+07526557000100 # Ambev
+02916265000160 # JBS
+01838723000127 # BRF
+
+# --- Serviços / internet / telecom ---
+03361252000134 # Mercado Livre
+02558157000162 # Telefônica Brasil (Vivo)
+02421421000111 # TIM
+40432544000147 # Claro
+16670085000155 # Localiza
+
+# --- Indústria ---
+07689002000189 # Embraer
+84429695000111 # WEG
+33611500000119 # Gerdau
+16404287000155 # Suzano
+
+# --- Estatais / serviços públicos ---
+34028316000103 # Correios (ECT)
+43776517000180 # Sabesp
