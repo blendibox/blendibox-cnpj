@@ -49,6 +49,29 @@ body {
 .marca-icone { font-size: 22px; }
 .marca-texto strong { color: var(--azul); }
 
+/* CTA fixo no topo — com efeito de brilho passando */
+.topo-cta {
+  position: relative; overflow: hidden; margin-left: auto;
+  background: linear-gradient(135deg, #15803d, #0f6130);
+  color: #fff; font-weight: 700; font-size: 14px; line-height: 1;
+  padding: 10px 18px; border-radius: 9px; text-decoration: none; white-space: nowrap;
+  box-shadow: 0 2px 12px rgba(21, 128, 61, .4);
+  transition: transform .12s, box-shadow .12s;
+}
+.topo-cta:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(21, 128, 61, .55); }
+.topo-cta::after {
+  content: ""; position: absolute; top: 0; left: -80%; width: 45%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, .6), transparent);
+  transform: skewX(-20deg); animation: brilho-cta 3.2s ease-in-out infinite;
+}
+@keyframes brilho-cta {
+  0% { left: -80%; }
+  55% { left: 130%; }
+  100% { left: 130%; }
+}
+.topo-cta .cta-short { display: none; }
+@media (prefers-reduced-motion: reduce) { .topo-cta::after { animation: none; } }
+
 /* Busca */
 .busca-hero { text-align: center; padding: 48px 0 24px; }
 .busca-hero h1 { font-size: 28px; margin: 0 0 6px; }
@@ -365,8 +388,11 @@ body.com-resultado .landing { display: none; } /* some quando há resultado */
 
   /* Cabeçalho compacto */
   .topo-conteudo { height: 56px; }
-  .marca { font-size: 16px; gap: 8px; }
+  .marca { font-size: 15px; gap: 8px; }
   .marca-icone { font-size: 19px; }
+  .topo-cta { padding: 8px 12px; font-size: 13px; }
+  .topo-cta .cta-full { display: none; }
+  .topo-cta .cta-short { display: inline; }
 
   /* Busca empilhada e confortável */
   .busca-hero { padding: 28px 0 18px; }
