@@ -13,7 +13,6 @@ window.APP_CONFIG = {
   // Domínio público do site (usado no SEO dinâmico: canonical e JSON-LD).
   SITE_URL: "https://buscadeempresa.blendibox.com.br",
 
-  // Link da extensão na Chrome Web Store (preencha após publicar).
-  // Vazio = os botões mostram "Em breve na Chrome Web Store".
-  CHROME_STORE_URL: "",
+  // Link da extensão na Chrome Web Store.
+  CHROME_STORE_URL: "https://chromewebstore.google.com/detail/busca-de-empresa-blendibo/lhglejndpilbffhplpbgmhgdngekcdah",
 };
