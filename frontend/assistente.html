@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assistente de Vendas IA — Demonstração | Blendibox</title>
+  <meta name="robots" content="noindex, follow" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <style>
+    :root { --verde:#128c7e; --verde2:#25d366; --bolha-eu:#dcf8c6; --fundo-chat:#e5ddd5; --txt:#1a1f26; --fraco:#5b6672; --borda:#e2e6eb; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--txt); background:#f0f2f5; }
+    .wrap { max-width: 900px; margin:0 auto; padding: 16px; display:grid; grid-template-columns: 320px 1fr; gap:16px; }
+    .voltar { grid-column:1/-1; }
+    .voltar a { color:var(--verde); text-decoration:none; font-size:14px; }
+    .card { background:#fff; border:1px solid var(--borda); border-radius:12px; overflow:hidden; }
+    /* Config */
+    .config { padding:16px; }
+    .config h2 { font-size:16px; margin:0 0 4px; }
+    .config .sub { font-size:12px; color:var(--fraco); margin:0 0 14px; }
+    .config label { display:block; font-size:12px; font-weight:600; margin-bottom:12px; }
+    .config input, .config textarea { width:100%; margin-top:5px; padding:9px 10px; font-size:13px; font-family:inherit; border:1px solid var(--borda); border-radius:8px; }
+    .config textarea { resize:vertical; }
+    .config .btn { width:100%; padding:10px; border:none; border-radius:8px; background:var(--verde); color:#fff; font-weight:600; cursor:pointer; margin-top:4px; }
+    /* Chat */
+    .chat { display:flex; flex-direction:column; height: 78vh; min-height:480px; }
+    .chat-top { background:var(--verde); color:#fff; padding:12px 16px; display:flex; align-items:center; gap:10px; }
+    .chat-top .av { width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.25); display:flex; align-items:center; justify-content:center; font-size:18px; }
+    .chat-top .nome { font-weight:700; font-size:15px; }
+    .chat-top .st { font-size:12px; opacity:.85; }
+    .msgs { flex:1; overflow-y:auto; padding:16px; background:var(--fundo-chat); display:flex; flex-direction:column; gap:8px; }
+    .msg { max-width:78%; padding:8px 12px; border-radius:10px; font-size:14px; line-height:1.4; white-space:pre-wrap; box-shadow:0 1px 1px rgba(0,0,0,.08); }
+    .msg.ia { align-self:flex-start; background:#fff; border-top-left-radius:2px; }
+    .msg.eu { align-self:flex-end; background:var(--bolha-eu); border-top-right-radius:2px; }
+    .msg.sys { align-self:center; background:#fff8c4; color:#7a6a00; font-size:12px; text-align:center; }
+    .digitando { align-self:flex-start; color:var(--fraco); font-size:13px; font-style:italic; padding:4px 12px; }
+    .barra { display:flex; gap:8px; padding:10px; background:#f0f2f5; }
+    .barra input { flex:1; padding:11px 14px; border:1px solid var(--borda); border-radius:22px; font-size:14px; outline:none; }
+    .barra button { width:46px; height:46px; border:none; border-radius:50%; background:var(--verde2); color:#fff; font-size:18px; cursor:pointer; }
+    .barra button:disabled { opacity:.6; }
+    @media (max-width:760px){ .wrap { grid-template-columns:1fr; } .chat { height:70vh; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="voltar"><a href="./">← Voltar ao site</a></div>
+
+    <div class="card config">
+      <h2>🤖 Assistente de Vendas IA</h2>
+      <p class="sub">Demonstração. Configure o assistente e converse como se fosse um lead no WhatsApp.</p>
+      <label>Sua empresa
+        <input id="c-empresa" value="Blendibox" />
+      </label>
+      <label>Produto / o que vende
+        <textarea id="c-produto" rows="3">Comparador de preços de cosméticos e perfumaria, com as melhores ofertas de lojas parceiras.</textarea>
+      </label>
+      <label>Roteiro de qualificação
+        <textarea id="c-roteiro" rows="3">Descobrir se é para revenda ou consumo próprio, quais categorias interessam e a faixa de orçamento.</textarea>
+      </label>
+      <label>CNPJ do lead (opcional — personaliza)
+        <input id="c-cnpj" placeholder="00.000.000/0001-00" />
+      </label>
+      <button class="btn" id="reiniciar">Reiniciar conversa</button>
+    </div>
+
+    <div class="card chat">
+      <div class="chat-top">
+        <div class="av">🤖</div>
+        <div><div class="nome" id="chat-nome">Assistente Blendibox</div><div class="st">online</div></div>
+      </div>
+      <div class="msgs" id="msgs"></div>
+      <form class="barra" id="form">
+        <input id="entrada" placeholder="Escreva como o lead…" autocomplete="off" />
+        <button type="submit" id="enviar" aria-label="Enviar">➤</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    const API_BASE = (window.APP_CONFIG && window.APP_CONFIG.API_BASE) || "https://buscador-empresas-blendibox.blendibox.workers.dev";
+    const $ = (id) => document.getElementById(id);
+    const msgsEl = $("msgs");
+    let mensagens = [];
+
+    function cfg() {
+      return {
+        empresa: $("c-empresa").value.trim(),
+        produto: $("c-produto").value.trim(),
+        roteiro: $("c-roteiro").value.trim(),
+      };
+    }
+    function onlyDigits(s){ return (s||"").replace(/\D/g,""); }
+
+    function render() {
+      msgsEl.innerHTML = mensagens.map(m =>
+        `<div class="msg ${m.role === 'assistant' ? 'ia' : 'eu'}">${esc(m.content)}</div>`
+      ).join("");
+      msgsEl.scrollTop = msgsEl.scrollHeight;
+    }
+    function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function reiniciar() {
+      mensagens = [];
+      $("chat-nome").textContent = "Assistente " + ($("c-empresa").value.trim() || "IA");
+      msgsEl.innerHTML = `<div class="msg sys">Conversa iniciada. Escreva uma mensagem como se fosse o lead.</div>`;
+    }
+    $("reiniciar").addEventListener("click", reiniciar);
+
+    $("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const texto = $("entrada").value.trim();
+      if (!texto) return;
+      $("entrada").value = "";
+      mensagens.push({ role: "user", content: texto });
+      render();
+
+      const btn = $("enviar"); btn.disabled = true;
+      const dig = document.createElement("div"); dig.className = "digitando"; dig.textContent = "digitando…";
+      msgsEl.appendChild(dig); msgsEl.scrollTop = msgsEl.scrollHeight;
+
+      try {
+        const res = await fetch(API_BASE + "/ia/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ config: cfg(), cnpjLead: onlyDigits($("c-cnpj").value), mensagens }),
+        });
+        const json = await res.json();
+        dig.remove();
+        if (res.ok && json.resposta) {
+          mensagens.push({ role: "assistant", content: json.resposta });
+        } else {
+          mensagens.push({ role: "assistant", content: "⚠️ " + (json.erro || "Não consegui responder agora.") });
+        }
+        render();
+      } catch (_) {
+        dig.remove();
+        mensagens.push({ role: "assistant", content: "⚠️ Erro de conexão." });
+        render();
+      } finally {
+        btn.disabled = false;
+        $("entrada").focus();
+      }
+    });
+
+    reiniciar();
+  </script>
+</body>
+</html>

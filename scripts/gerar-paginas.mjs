@@ -182,6 +182,10 @@ function paginaEmpresa(d, rota) {
         <span class="marca-icone">🔎</span>
         <span class="marca-texto">Busca de Empresa <strong>Blendibox</strong></span>
       </a>
+      <a class="topo-cta" href="https://chromewebstore.google.com/detail/busca-de-empresa-blendibo/lhglejndpilbffhplpbgmhgdngekcdah" target="_blank" rel="noopener" aria-label="Adicionar a extensão ao Chrome — grátis">
+        <span class="cta-full">＋ Adicionar ao Chrome</span>
+        <span class="cta-short">＋ Chrome</span>
+      </a>
     </div>
   </header>
 

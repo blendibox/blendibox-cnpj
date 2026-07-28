@@ -85,6 +85,11 @@ export default {
       return handleGeocode(url, env);
     }
 
+    // Assistente de vendas (IA): POST /ia/chat
+    if (url.pathname === "/ia/chat" && request.method === "POST") {
+      return handleIaChat(request, env);
+    }
+
     // Busca por nome na base ja cacheada: /buscar?nome=...
     if (url.pathname === "/buscar" && request.method === "GET") {
       return handleBuscaNome(url, env);
@@ -500,6 +505,84 @@ async function geoNominatim(params) {
   const arr = await r.json();
   if (!arr.length) return null;
   return { lat: parseFloat(arr[0].lat), lon: parseFloat(arr[0].lon) };
+}
+
+/**
+ * Assistente de vendas (SDR) com IA — Cloudflare Workers AI.
+ * Stateless: o frontend envia o histórico. Pode ser aterrado nos dados
+ * públicos do CNPJ do lead (diferencial).
+ */
+async function handleIaChat(request, env) {
+  let body;
+  try {
+    body = await request.json();
+  } catch (_) {
+    return corsResponse({ erro: "Corpo invalido." }, 400);
+  }
+
+  const mensagens = Array.isArray(body.mensagens) ? body.mensagens.slice(-12) : [];
+  if (!mensagens.length) return corsResponse({ erro: "Sem mensagens." }, 400);
+
+  const cfg = body.config || {};
+  let contextoEmpresa = "";
+  const cnpj = onlyDigits(body.cnpjLead || "");
+  if (isValidCnpj(cnpj)) {
+    const resumo = await resumoParaIa(env, cnpj);
+    if (resumo) contextoEmpresa = `\nDados públicos da empresa do lead (CNPJ ${cnpj}): ${resumo}. Use para personalizar a abordagem.`;
+  }
+
+  const messages = [
+    { role: "system", content: montarSystemPrompt(cfg, contextoEmpresa) },
+    ...mensagens.map((m) => ({
+      role: m.role === "assistant" ? "assistant" : "user",
+      content: String(m.content || "").slice(0, 2000),
+    })),
+  ];
+
+  try {
+    const modelo = body.modelo || env.IA_MODELO || "@cf/meta/llama-3.2-3b-instruct";
+    const r = await env.AI.run(modelo, { messages, max_tokens: 400, temperature: 0.6 });
+    const resposta = (r?.response || "").trim();
+    return corsResponse({ resposta }, 200);
+  } catch (e) {
+    return corsResponse({ erro: "Assistente indisponivel no momento.", detalhe: String((e && e.message) || e) }, 502);
+  }
+}
+
+function montarSystemPrompt(cfg, contextoEmpresa) {
+  const empresa = (cfg.empresa || "nossa empresa").toString().slice(0, 80);
+  const produto = (cfg.produto || "").toString().slice(0, 900);
+  const roteiro = (cfg.roteiro || "").toString().slice(0, 900);
+  return [
+    `Você é um SDR (assistente de vendas) da ${empresa}, atendendo leads pelo WhatsApp, em português do Brasil.`,
+    `Objetivo: atender com cordialidade, tirar dúvidas e QUALIFICAR o lead de forma humanizada — nunca robótica.`,
+    produto ? `Sobre a empresa/produto: ${produto}` : "",
+    roteiro ? `Roteiro de qualificação (siga com naturalidade, UMA pergunta por vez): ${roteiro}` : "",
+    `Regras: mensagens curtas e naturais (estilo WhatsApp); no máximo 1 pergunta por mensagem; nunca invente dados — se não souber, diga que vai verificar com o time. Quando o lead demonstrar interesse claro, ofereça agendar uma conversa com um consultor humano.`,
+    contextoEmpresa,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+async function resumoParaIa(env, cnpj) {
+  let data = null;
+  const cached = await getFromCache(env, cnpj);
+  if (cached) data = JSON.parse(cached.payload);
+  else {
+    const up = await consultarUpstream(cnpj);
+    if (up.status === 200) data = up.data;
+  }
+  if (!data) return "";
+  return [
+    data.razao_social,
+    data.descricao_situacao_cadastral,
+    data.porte,
+    data.cnae_fiscal_descricao,
+    [data.municipio, data.uf].filter(Boolean).join("/"),
+  ]
+    .filter(Boolean)
+    .join(" · ");
 }
 
 /** Incrementa o contador de buscas do CNPJ (para poda por demanda). */
