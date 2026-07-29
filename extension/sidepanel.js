@@ -6,6 +6,7 @@ const boxRes = document.getElementById("resultado");
 /* ------------------------- busca ------------------------- */
 
 entrada.addEventListener("input", () => {
+  if (/[a-zA-ZÀ-ÿ]/.test(entrada.value)) return; // nome: não formata
   const d = onlyDigits(entrada.value).slice(0, 14);
   entrada.value = d.length > 12
     ? `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8,12)}-${d.slice(12)}`
@@ -14,11 +15,49 @@ entrada.addEventListener("input", () => {
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
-  const cnpj = onlyDigits(entrada.value);
+  const valor = entrada.value.trim();
   boxErro.hidden = true;
-  if (!isValidCnpj(cnpj)) return mostrarErro("Digite um CNPJ válido (14 dígitos).");
+  // Tem letra? busca por nome. Senão, por CNPJ.
+  if (/[a-zA-ZÀ-ÿ]/.test(valor)) {
+    if (valor.length < 3) return mostrarErro("Digite ao menos 3 caracteres do nome.");
+    return buscarPorNome(valor);
+  }
+  const cnpj = onlyDigits(valor);
+  if (!isValidCnpj(cnpj)) return mostrarErro("Digite um CNPJ válido ou o nome da empresa.");
   buscar(cnpj);
 });
+
+async function buscarPorNome(nome) {
+  boxRes.innerHTML = `<div class="carregando">Buscando…</div>`;
+  try {
+    const res = await fetch(API_BASE + "/buscar?nome=" + encodeURIComponent(nome));
+    const json = await res.json();
+    if (!res.ok) { boxRes.innerHTML = ""; return mostrarErro(json.erro || "Não foi possível buscar."); }
+    renderListaNomes(json.resultados, nome);
+  } catch (_) {
+    boxRes.innerHTML = "";
+    mostrarErro("Erro de conexão.");
+  }
+}
+
+function renderListaNomes(lista, termo) {
+  if (!lista || !lista.length) {
+    boxRes.innerHTML = `<div class="resumo">Nenhuma empresa encontrada para "<strong>${esc(termo)}</strong>".<br><small>A busca por nome cobre apenas empresas já consultadas por CNPJ.</small></div>`;
+    return;
+  }
+  boxRes.innerHTML = `
+    <div class="lista-nomes">
+      ${lista
+        .map(
+          (r) => `<div class="nome-item" data-cnpj="${esc(onlyDigits(r.cnpj))}">
+            <div class="nome-razao">${esc(r.razao_social) || "—"}</div>
+            <div class="nome-meta">${formatarCnpj(String(r.cnpj || ""))}${r.municipio ? " · " + esc(r.municipio) + "/" + esc(r.uf || "") : ""}</div>
+          </div>`
+        )
+        .join("")}
+    </div>
+    <div class="nota-lgpd">Cobre empresas já consultadas por CNPJ. Toque para ver os detalhes.</div>`;
+}
 
 async function buscar(cnpj) {
   boxRes.innerHTML = `<div class="carregando">Consultando…</div>`;
@@ -97,7 +136,13 @@ boxRes.addEventListener("click", async (e) => {
     return;
   }
   const dist = e.target.closest(".btn-dist");
-  if (dist) calcularDistancia(dist);
+  if (dist) { calcularDistancia(dist); return; }
+
+  const nomeItem = e.target.closest(".nome-item");
+  if (nomeItem) {
+    entrada.value = formatarCnpj(nomeItem.dataset.cnpj);
+    buscar(nomeItem.dataset.cnpj);
+  }
 });
 
 // Distância até você (geolocalização + geocode + haversine)

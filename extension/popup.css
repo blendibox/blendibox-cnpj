@@ -87,6 +87,16 @@ body {
 
 .nota-lgpd { font-size: 11px; color: var(--fraco); margin-top: 6px; }
 
+/* Lista de busca por nome */
+.lista-nomes { display: flex; flex-direction: column; gap: 8px; }
+.nome-item {
+  border: 1px solid var(--borda); border-radius: 8px; padding: 9px 11px;
+  cursor: pointer; transition: border-color .12s, background .12s;
+}
+.nome-item:hover { border-color: var(--azul); background: var(--fundo); }
+.nome-razao { font-size: 13px; font-weight: 600; }
+.nome-meta { font-size: 11px; color: var(--fraco); margin-top: 2px; }
+
 .rodape { text-align: center; font-size: 11px; color: var(--fraco); padding: 10px; border-top: 1px solid var(--borda); }
 .rodape a { color: var(--azul); }
 
