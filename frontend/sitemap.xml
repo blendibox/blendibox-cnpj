@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://buscadeempresa.blendibox.com.br/</loc><lastmod>2026-08-23</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
-  <url><loc>https://buscadeempresa.blendibox.com.br/termos.html</loc><lastmod>2026-08-23</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://buscadeempresa.blendibox.com.br/privacidade.html</loc><lastmod>2026-08-23</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://buscadeempresa.blendibox.com.br/empresa/bgi-comercio-ltda-65025894000110/</loc><lastmod>2026-07-24</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://buscadeempresa.blendibox.com.br/empresa/juliana-goncalves-da-costa-17084837000169/</loc><lastmod>2026-07-24</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://buscadeempresa.blendibox.com.br/empresa/magazine-luiza-s-a-47960950000121/</loc><lastmod>2026-07-24</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://buscadeempresa.blendibox.com.br/empresa/banco-do-brasil-sa-00000000000191/</loc><lastmod>2026-07-24</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://buscadeempresa.blendibox.com.br/</loc><lastmod>2026-08-24</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://buscadeempresa.blendibox.com.br/termos.html</loc><lastmod>2026-08-24</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://buscadeempresa.blendibox.com.br/privacidade.html</loc><lastmod>2026-08-24</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://buscadeempresa.blendibox.com.br/empresa/caixa-economica-federal-00360305000104/</loc><lastmod>2026-07-28</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://buscadeempresa.blendibox.com.br/empresa/itau-unibanco-s-a-60701190000104/</loc><lastmod>2026-07-28</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://buscadeempresa.blendibox.com.br/empresa/banco-bradesco-s-a-60746948000112/</loc><lastmod>2026-07-28</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
@@ -48,4 +44,8 @@
   <url><loc>https://buscadeempresa.blendibox.com.br/empresa/62-643-849-filipe-roberto-ferreira-62643849000130/</loc><lastmod>2026-08-18</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://buscadeempresa.blendibox.com.br/empresa/swap-instituicao-de-pagamento-s-a-31680151000161/</loc><lastmod>2026-08-19</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://buscadeempresa.blendibox.com.br/empresa/banco-inter-s-a-00416968000101/</loc><lastmod>2026-08-20</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://buscadeempresa.blendibox.com.br/empresa/bgi-comercio-ltda-65025894000110/</loc><lastmod>2026-08-24</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://buscadeempresa.blendibox.com.br/empresa/juliana-goncalves-da-costa-17084837000169/</loc><lastmod>2026-08-24</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://buscadeempresa.blendibox.com.br/empresa/magazine-luiza-s-a-47960950000121/</loc><lastmod>2026-08-24</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://buscadeempresa.blendibox.com.br/empresa/banco-do-brasil-sa-00000000000191/</loc><lastmod>2026-08-24</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
 </urlset>
