@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://buscadeempresa.blendibox.com.br/</loc><lastmod>2026-09-03</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
-  <url><loc>https://buscadeempresa.blendibox.com.br/termos.html</loc><lastmod>2026-09-03</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://buscadeempresa.blendibox.com.br/privacidade.html</loc><lastmod>2026-09-03</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://buscadeempresa.blendibox.com.br/empresa/good-bom-supermercados-ltda-56794852002104/</loc><lastmod>2026-08-04</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://buscadeempresa.blendibox.com.br/empresa/ticiane-henriques-clinique-ltda-63796261000180/</loc><lastmod>2026-08-04</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://buscadeempresa.blendibox.com.br/</loc><lastmod>2026-09-04</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://buscadeempresa.blendibox.com.br/termos.html</loc><lastmod>2026-09-04</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://buscadeempresa.blendibox.com.br/privacidade.html</loc><lastmod>2026-09-04</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://buscadeempresa.blendibox.com.br/empresa/banco-bv-s-a-01858774000110/</loc><lastmod>2026-08-06</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://buscadeempresa.blendibox.com.br/empresa/banco-votorantim-s-a-59588111000103/</loc><lastmod>2026-08-06</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://buscadeempresa.blendibox.com.br/empresa/seguros-sura-s-a-33065699000127/</loc><lastmod>2026-08-07</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
@@ -48,4 +46,7 @@
   <url><loc>https://buscadeempresa.blendibox.com.br/empresa/companhia-de-saneamento-basico-do-estado-de-sao-paulo-sabesp-43776517000180/</loc><lastmod>2026-08-28</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://buscadeempresa.blendibox.com.br/empresa/fundacao-petrobras-de-seguridade-social-petros-34053942000150/</loc><lastmod>2026-08-29</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://buscadeempresa.blendibox.com.br/empresa/awin-veiculacao-de-publicidade-na-internet-ltda-14182871000188/</loc><lastmod>2026-09-01</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://buscadeempresa.blendibox.com.br/empresa/good-bom-supermercados-ltda-56794852002104/</loc><lastmod>2026-09-04</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://buscadeempresa.blendibox.com.br/empresa/ticiane-henriques-clinique-ltda-63796261000180/</loc><lastmod>2026-09-04</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://buscadeempresa.blendibox.com.br/empresa/mercado-livre-brasil-ltda-03007331000141/</loc><lastmod>2026-09-04</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
 </urlset>
