@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://buscadeempresa.blendibox.com.br/</loc><lastmod>2026-11-09</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
-  <url><loc>https://buscadeempresa.blendibox.com.br/termos.html</loc><lastmod>2026-11-09</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://buscadeempresa.blendibox.com.br/privacidade.html</loc><lastmod>2026-11-09</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://buscadeempresa.blendibox.com.br/empresa/plano-misto-de-beneficios-previdenciarios-dos-trabalhadores--48307223000122/</loc><lastmod>2026-10-10</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://buscadeempresa.blendibox.com.br/</loc><lastmod>2026-11-10</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://buscadeempresa.blendibox.com.br/termos.html</loc><lastmod>2026-11-10</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://buscadeempresa.blendibox.com.br/privacidade.html</loc><lastmod>2026-11-10</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://buscadeempresa.blendibox.com.br/empresa/zein-importacao-e-comercio-ltda-09023754000646/</loc><lastmod>2026-10-12</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://buscadeempresa.blendibox.com.br/empresa/planeta-comercio-importacao-e-exportacao-ltda-01882767000316/</loc><lastmod>2026-10-17</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://buscadeempresa.blendibox.com.br/empresa/trace-disc-multimidia-da-amazonia-ltda-03802572000182/</loc><lastmod>2026-10-17</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
@@ -59,4 +58,6 @@
   <url><loc>https://buscadeempresa.blendibox.com.br/empresa/banco-bv-s-a-01858774000110/</loc><lastmod>2026-11-06</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://buscadeempresa.blendibox.com.br/empresa/banco-votorantim-s-a-59588111000103/</loc><lastmod>2026-11-06</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://buscadeempresa.blendibox.com.br/empresa/seguros-sura-s-a-33065699000127/</loc><lastmod>2026-11-08</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://buscadeempresa.blendibox.com.br/empresa/plano-misto-de-beneficios-previdenciarios-dos-trabalhadores--48307223000122/</loc><lastmod>2026-11-10</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://buscadeempresa.blendibox.com.br/empresa/bilg-comercio-de-brindes-e-servicos-de-tecnologia-ltda-29382254000101/</loc><lastmod>2026-11-10</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
 </urlset>
